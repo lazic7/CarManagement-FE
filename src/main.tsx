@@ -1,10 +1,30 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { createBrowserRouter } from "react-router";
+import { RouterProvider } from "react-router/dom";
 
-createRoot(document.getElementById('root')!).render(
+import "./App.css";
+import "./index.css";
+import { App } from "./App";
+import { Dashboard, Ledger } from "./features";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    Component: App,
+  },
+  {
+    path: "/ledger",
+    Component: Ledger,
+  },
+  {
+    path: "/dashboard",
+    Component: Dashboard,
+  },
+]);
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <RouterProvider router={router} />
   </StrictMode>,
-)
+);

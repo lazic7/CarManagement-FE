@@ -24,13 +24,13 @@ const router = createBrowserRouter([
   {
     path: "/ledger",
     Component: Ledger,
-    middleware: [requireAuth],
+    middleware: [requireAuth(["user"])],
     errorElement: <RouteErrorPage />,
   },
   {
     path: "/dashboard",
     Component: Dashboard,
-    middleware: [requireAuth],
+    middleware: [requireAuth(["admin"])],
     errorElement: <RouteErrorPage />,
   },
   {

@@ -2,13 +2,19 @@ import { Link } from "react-router";
 import "../../App.css";
 
 export const Dashboard = () => {
+  const handleLogout = () => {
+    localStorage.clear();
+  };
+
   return (
     <>
       <header>
         <div className="logo">AutoLedger</div>
         <nav>
           <span className="badge">Admin Panel</span>
-          <Link to="/">Logout</Link>
+          <Link to="/" onClick={handleLogout}>
+            Logout
+          </Link>
         </nav>
       </header>
       <main>

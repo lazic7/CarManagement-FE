@@ -70,8 +70,12 @@ export const App = () => {
       }
 
       navigate("/ledger");
-    } catch {
-      setAuthError("Login failed. Please check your credentials.");
+    } catch (error) {
+      setAuthError(
+        error instanceof Error && error.message
+          ? error.message
+          : "Login failed. Please check your credentials.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -105,8 +109,12 @@ export const App = () => {
       setLoginPassword("");
       setRegisterPassword("");
       setRegisterConfirmPassword("");
-    } catch {
-      setAuthError("Registration failed. Please try again.");
+    } catch (error) {
+      setAuthError(
+        error instanceof Error && error.message
+          ? error.message
+          : "Registration failed. Please try again.",
+      );
     } finally {
       setIsSubmitting(false);
     }

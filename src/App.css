@@ -423,6 +423,31 @@ nav a:hover {
   box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
 }
 
+/* Mileage spinner styling for WebKit browsers */
+#admin-mileage::-webkit-inner-spin-button,
+#admin-mileage::-webkit-outer-spin-button {
+  opacity: 1;
+  min-height: 30px;
+  cursor: pointer;
+  filter: brightness(1.4) saturate(1.2)
+    drop-shadow(0 0 4px rgba(0, 212, 255, 0.35));
+  transition: filter var(--transition);
+}
+
+#admin-mileage:hover::-webkit-inner-spin-button,
+#admin-mileage:hover::-webkit-outer-spin-button,
+#admin-mileage:focus::-webkit-inner-spin-button,
+#admin-mileage:focus::-webkit-outer-spin-button {
+  filter: brightness(1.65) saturate(1.35)
+    drop-shadow(0 0 6px rgba(139, 92, 246, 0.4));
+}
+
+/* Keep native spinner in Firefox while blending with dark UI */
+#admin-mileage {
+  appearance: auto;
+  color-scheme: dark;
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -467,6 +492,17 @@ nav a:hover {
 
 .auth-feedback-success {
   color: var(--accent-cyan);
+}
+
+.ledger-feedback {
+  margin-top: 0.9rem;
+}
+
+.ledger-meta {
+  margin-top: 0.7rem;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  word-break: break-all;
 }
 
 .auth-switch {

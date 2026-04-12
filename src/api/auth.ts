@@ -4,12 +4,34 @@ import type {
   RegisterRequestDto,
   RegisterResponseDto,
 } from "./dto";
+import { buildApiUrl } from "./client";
 
-const registerEndpoint = "http://localhost/auth/register";
-const loginEndpoint = "http://localhost:3000/auth/login";
+const registerEndpoint = buildApiUrl("/auth/register");
+const loginEndpoint = buildApiUrl("/auth/login");
 
 const defaultHeaders = {
   "Content-Type": "application/json",
+};
+
+interface ApiErrorResponse {
+  message?: string;
+}
+
+const getErrorMessage = async (
+  response: Response,
+  fallbackMessage: string,
+): Promise<string> => {
+  try {
+    const data = (await response.json()) as ApiErrorResponse;
+
+    if (typeof data.message === "string" && data.message.trim()) {
+      return data.message;
+    }
+  } catch {
+    // Ignore invalid or empty error bodies and use the fallback instead.
+  }
+
+  return fallbackMessage;
 };
 
 export const registerUser = async (
@@ -22,7 +44,7 @@ export const registerUser = async (
   });
 
   if (!response.ok) {
-    throw new Error("Registration failed.");
+    throw new Error(await getErrorMessage(response, "Registration failed."));
   }
 
   return response.json() as Promise<RegisterResponseDto>;
@@ -38,7 +60,7 @@ export const loginUser = async (
   });
 
   if (!response.ok) {
-    throw new Error("Login failed.");
+    throw new Error(await getErrorMessage(response, "Login failed."));
   }
 
   return response.json() as Promise<LoginResponseDto>;

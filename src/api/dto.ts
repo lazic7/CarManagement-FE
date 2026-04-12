@@ -28,3 +28,13 @@ export interface AuthTokenPayloadDto {
   iat?: number;
   exp?: number;
 }
+
+export interface MileageRecordDto {
+  mileage: number;
+  timestamp: number;
+  mechanic: string;
+}
+
+export interface MileageRecordResponseDto {
+  records: MileageRecordDto[];
+}

@@ -6,15 +6,30 @@ import {
 } from "react-router";
 import "../../App.css";
 
+const getRouteErrorDetail = (data: unknown) => {
+  if (typeof data === "string") {
+    return data;
+  }
+
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "message" in data &&
+    typeof data.message === "string" &&
+    data.message.trim()
+  ) {
+    return data.message;
+  }
+
+  return "Dogodila se greška pri učitavanju stranice.";
+};
+
 const getErrorMessage = (error: unknown) => {
   if (isRouteErrorResponse(error)) {
     return {
       code: String(error.status),
       title: error.statusText || "Greška na ruti",
-      detail:
-        typeof error.data === "string"
-          ? error.data
-          : "Dogodila se greška pri učitavanju stranice.",
+      detail: getRouteErrorDetail(error.data),
     };
   }
 

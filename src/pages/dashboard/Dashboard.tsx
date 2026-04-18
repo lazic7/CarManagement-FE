@@ -14,6 +14,7 @@ import { RecentActivity } from "./RecentActivity";
 import { StepIndicator, type SubmitStep } from "./StepIndicator";
 import {
   loadHistory,
+  persistHistory,
   saveEntry,
   type AdminHistoryEntry,
 } from "./adminHistory";
@@ -53,7 +54,11 @@ export const Dashboard = () => {
     fetchAdminHistoryFromChain(connectedWallet)
       .then((chainEntries) => {
         if (cancelled) return;
-        setHistory((previous) => mergeHistories(chainEntries, previous));
+        setHistory((previous) => {
+          const merged = mergeHistories(chainEntries, previous);
+          persistHistory(merged);
+          return merged;
+        });
       })
       .catch(() => {
         /* fallback: keep local history */
@@ -131,7 +136,7 @@ export const Dashboard = () => {
         timestamp: Date.now(),
         status: result.confirmationStatus,
       };
-      setHistory(saveEntry(entry));
+      setHistory((previous) => saveEntry(entry, previous));
 
       if (result.confirmationStatus === "confirmed") {
         toast.success("Mileage recorded on blockchain!", { id: pendingToast });

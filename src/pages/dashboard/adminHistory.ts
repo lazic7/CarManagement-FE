@@ -24,9 +24,10 @@ const dedupeByTxHash = (
   return deduped;
 };
 
-const persist = (entries: AdminHistoryEntry[]): void => {
+export const persistHistory = (entries: AdminHistoryEntry[]): void => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+    const deduped = dedupeByTxHash(entries).slice(0, MAX_ENTRIES);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(deduped));
   } catch {
     // Storage may be unavailable; fail silently.
   }
@@ -41,7 +42,7 @@ export const loadHistory = (): AdminHistoryEntry[] => {
     const entries = parsed as AdminHistoryEntry[];
     const deduped = dedupeByTxHash(entries);
     if (deduped.length !== entries.length) {
-      persist(deduped);
+      persistHistory(deduped);
     }
     return deduped;
   } catch {
@@ -49,13 +50,15 @@ export const loadHistory = (): AdminHistoryEntry[] => {
   }
 };
 
-export const saveEntry = (entry: AdminHistoryEntry): AdminHistoryEntry[] => {
-  const current = loadHistory();
-  const withoutDuplicate = current.filter(
+export const saveEntry = (
+  entry: AdminHistoryEntry,
+  currentList: AdminHistoryEntry[] = loadHistory(),
+): AdminHistoryEntry[] => {
+  const withoutDuplicate = currentList.filter(
     (existing) =>
       existing.txHash.toLowerCase() !== entry.txHash.toLowerCase(),
   );
   const next = [entry, ...withoutDuplicate].slice(0, MAX_ENTRIES);
-  persist(next);
+  persistHistory(next);
   return next;
 };

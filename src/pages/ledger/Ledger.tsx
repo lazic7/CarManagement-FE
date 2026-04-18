@@ -6,6 +6,8 @@ import { getMileageRecordsByVin } from "../../api/records";
 import type { MileageRecordDto } from "../../api/dto";
 import { generateVehiclePassport } from "../../utils/pdfExport";
 import { buildAddressUrl, shortenHash } from "../../utils/explorer";
+import { VehicleStatsCard } from "./VehicleStatsCard";
+import { MileageChart } from "./MileageChart";
 
 export const Ledger = () => {
   const [vin, setVin] = useState("");
@@ -105,6 +107,13 @@ export const Ledger = () => {
 
             {errorMessage && (
               <p className="auth-feedback ledger-feedback">{errorMessage}</p>
+            )}
+
+            {sortedRecords.length > 0 && (
+              <VehicleStatsCard vin={fetchedVin} records={sortedRecords} />
+            )}
+            {sortedRecords.length >= 2 && (
+              <MileageChart records={sortedRecords} />
             )}
 
             <div className="results-section">

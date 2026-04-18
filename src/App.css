@@ -776,15 +776,49 @@ nav a:hover {
 .timeline-item::before {
   content: "";
   position: absolute;
-  left: -1.5rem;
-  top: 1.75rem;
-  width: 12px;
-  height: 12px;
-  background: var(--accent-cyan);
+  left: -1.6rem;
+  top: 1.5rem;
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(
+    circle,
+    var(--accent-cyan) 0%,
+    var(--accent-cyan) 45%,
+    rgba(0, 212, 255, 0.6) 70%,
+    transparent 100%
+  );
   border-radius: 50%;
   box-shadow:
-    0 0 12px var(--accent-cyan),
-    0 0 24px rgba(0, 212, 255, 0.4);
+    0 0 0 3px rgba(10, 10, 15, 0.95),
+    0 0 14px var(--accent-cyan),
+    0 0 32px rgba(139, 92, 246, 0.4);
+  animation: timeline-pulse 2.4s ease-in-out infinite;
+}
+
+.timeline-item:first-child::before {
+  background: radial-gradient(
+    circle,
+    var(--accent-purple) 0%,
+    var(--accent-purple) 45%,
+    rgba(139, 92, 246, 0.6) 70%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 0 3px rgba(10, 10, 15, 0.95),
+    0 0 18px var(--accent-purple),
+    0 0 36px rgba(139, 92, 246, 0.5);
+}
+
+@keyframes timeline-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.85;
+  }
 }
 
 .timeline-item:hover {
@@ -998,4 +1032,246 @@ footer p {
     font-size: 0.82rem;
     padding: 0.45rem 0.55rem;
   }
+}
+
+/* ---------- Vehicle Stats Card ---------- */
+
+.vehicle-stats-card {
+  position: relative;
+  margin-top: 2rem;
+  margin-bottom: 1.25rem;
+  padding: 1.5rem;
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      rgba(0, 212, 255, 0.1) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(139, 92, 246, 0.1) 0%,
+      transparent 40%
+    ),
+    rgba(15, 15, 25, 0.65);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.vehicle-stats-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-cyan) 30%,
+    var(--accent-purple) 70%,
+    transparent 100%
+  );
+}
+
+.stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.stats-vin {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.stats-vin-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.stats-vin code {
+  font-family: "SFMono-Regular", "Menlo", "Monaco", "Consolas", monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+
+.stats-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 999px;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.3);
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.85rem;
+}
+
+.stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1rem 1.1rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.stat-tile:hover {
+  border-color: rgba(0, 212, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.stat-tile-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.stat-tile-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-unit {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.stat-cyan {
+  color: var(--accent-cyan);
+  text-shadow: 0 0 18px rgba(0, 212, 255, 0.35);
+}
+
+.stat-purple {
+  color: var(--accent-purple);
+  text-shadow: 0 0 18px rgba(139, 92, 246, 0.35);
+}
+
+.stat-violet {
+  color: var(--accent-violet);
+}
+
+.stat-green {
+  color: #10b981;
+  text-shadow: 0 0 18px rgba(16, 185, 129, 0.3);
+}
+
+/* ---------- Mileage Chart Card ---------- */
+
+.mileage-chart-card {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem 1rem 1rem;
+  background: rgba(15, 15, 25, 0.55);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.chart-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.chart-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.chart-wrapper {
+  width: 100%;
+}
+
+.chart-tooltip {
+  padding: 0.6rem 0.85rem;
+  background: rgba(10, 10, 15, 0.95);
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(0, 212, 255, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.chart-tooltip-date {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.chart-tooltip-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-tooltip-value span {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 0.2rem;
 }

@@ -165,40 +165,248 @@ export const App = () => {
 
           {!showAuthForm && (
             <>
-              <section className="landing-hero">
-                <p className="landing-kicker">Blockchain-verified mileage</p>
-                <h1>AutoLedger</h1>
+              <section className="landing-hero-v2">
+                <div className="hero-bg-grid" aria-hidden="true" />
+                <div className="hero-content">
+                  <span className="hero-badge">
+                    <span className="hero-badge-dot" aria-hidden="true" />
+                    LIVE ON ENERGY WEB BLOCKCHAIN
+                  </span>
+                  <h1 className="hero-title">
+                    Mileage you can{" "}
+                    <span className="gradient-text">actually trust</span>.
+                  </h1>
+                  <p className="hero-subtitle">
+                    Every odometer reading is sealed on-chain. Tamper-proof,
+                    instantly verifiable, and permanent — for buyers,
+                    dealerships, and service providers.
+                  </p>
+                  <div className="hero-cta">
+                    <button
+                      type="button"
+                      className="btn btn-primary hero-btn"
+                      onClick={() => {
+                        setAuthView("register");
+                        setShowAuthForm(true);
+                      }}
+                    >
+                      Get started free
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost hero-btn"
+                      onClick={() => {
+                        setAuthView("login");
+                        setShowAuthForm(true);
+                      }}
+                    >
+                      Verify a vehicle
+                      <svg
+                        className="btn-arrow"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M5 12h14M13 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="hero-stats">
+                    <div className="hero-stat">
+                      <div className="hero-stat-value">100%</div>
+                      <div className="hero-stat-label">immutable</div>
+                    </div>
+                    <div className="hero-stat-divider" aria-hidden="true" />
+                    <div className="hero-stat">
+                      <div className="hero-stat-value">&lt; 3s</div>
+                      <div className="hero-stat-label">to verify</div>
+                    </div>
+                    <div className="hero-stat-divider" aria-hidden="true" />
+                    <div className="hero-stat">
+                      <div className="hero-stat-value">0€</div>
+                      <div className="hero-stat-label">for buyers</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hero-visual" aria-hidden="true">
+                  <div className="block-chain">
+                    <div className="block-card block-1">
+                      <div className="block-head">
+                        <span className="block-tag">BLOCK #1</span>
+                        <span className="block-check">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        </span>
+                      </div>
+                      <span className="block-vin">1HGCM82633A...</span>
+                      <span className="block-km">82,450 km</span>
+                    </div>
+                    <div className="chain-link chain-link-1" />
+                    <div className="block-card block-2">
+                      <div className="block-head">
+                        <span className="block-tag">BLOCK #2</span>
+                        <span className="block-check">
+                          <svg viewBox="0 0 24 24">
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        </span>
+                      </div>
+                      <span className="block-vin">1HGCM82633A...</span>
+                      <span className="block-km">98,200 km</span>
+                    </div>
+                    <div className="chain-link chain-link-2" />
+                    <div className="block-card block-3 block-active">
+                      <div className="block-head">
+                        <span className="block-tag">BLOCK #3</span>
+                        <span className="block-live">
+                          <span className="block-live-dot" />
+                          NEW
+                        </span>
+                      </div>
+                      <span className="block-vin">1HGCM82633A...</span>
+                      <span className="block-km">125,800 km</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="about" className="landing-problem">
+                <span className="section-kicker">THE PROBLEM</span>
+                <h2>
+                  Odometer fraud costs buyers{" "}
+                  <span className="gradient-text">€9 billion</span> every year
+                </h2>
                 <p>
-                  Transparent vehicle history and mileage verification for
-                  buyers, dealerships, and service providers.
+                  1 in 3 used cars in Europe has tampered mileage. Paper service
+                  books get forged. Centralized databases get edited. Without a
+                  trusted source of truth, every used car purchase becomes a leap
+                  of faith.
                 </p>
               </section>
 
-              <section id="about" className="landing-section glass-card">
-                <h2>About AutoLedger</h2>
-                <p>
-                  Every mileage update is sealed on-chain, so the history stays
-                  immutable and easy to verify.
-                </p>
+              <section className="landing-how">
+                <span className="section-kicker">HOW IT WORKS</span>
+                <h2>Three steps. Zero trust required.</h2>
+                <div className="how-grid">
+                  <article className="how-step glass-card">
+                    <div className="how-step-number">01</div>
+                    <h3>Mechanic records</h3>
+                    <p>
+                      A verified mechanic enters the VIN and current mileage
+                      after each service, signing the transaction with their
+                      wallet.
+                    </p>
+                  </article>
+                  <article className="how-step glass-card">
+                    <div className="how-step-number">02</div>
+                    <h3>Sealed on-chain</h3>
+                    <p>
+                      The record is cryptographically signed and written to the
+                      Energy Web blockchain. Cannot be altered or deleted by
+                      anyone — ever.
+                    </p>
+                  </article>
+                  <article className="how-step glass-card">
+                    <div className="how-step-number">03</div>
+                    <h3>Instant verification</h3>
+                    <p>
+                      Anyone with the VIN sees the full mileage history in
+                      seconds. No accounts required, no paperwork, no
+                      middlemen.
+                    </p>
+                  </article>
+                </div>
               </section>
 
-              <section className="landing-feature-grid">
-                <article id="features" className="glass-card landing-tile">
-                  <h3>Features</h3>
-                  <p>VIN lookup, timeline history, and blockchain proofs.</p>
-                </article>
-                <article id="security" className="glass-card landing-tile">
-                  <h3>Security</h3>
-                  <p>Immutable records and transparent audit trail.</p>
-                </article>
-                <article id="contact" className="glass-card landing-tile">
-                  <h3>Contact</h3>
-                  <p>Talk to our team for integration and onboarding.</p>
-                </article>
-                <article id="support" className="glass-card landing-tile">
-                  <h3>Support</h3>
-                  <p>Guides, documentation, and direct help when needed.</p>
-                </article>
+              <section id="features" className="landing-audience">
+                <span className="section-kicker">BUILT FOR</span>
+                <h2>Every stakeholder in the vehicle lifecycle</h2>
+                <div className="audience-grid">
+                  <article className="audience-card glass-card">
+                    <div className="audience-icon">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M5 17h14l-1.5-6h-11z" />
+                        <circle cx="7.5" cy="17.5" r="1.5" />
+                        <circle cx="16.5" cy="17.5" r="1.5" />
+                      </svg>
+                    </div>
+                    <h3>Buyers</h3>
+                    <p>
+                      Know exactly what you're paying for. Verify history
+                      before you hand over money.
+                    </p>
+                  </article>
+                  <article className="audience-card glass-card">
+                    <div className="audience-icon">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M3 21h18M5 21V8l7-5 7 5v13M10 21v-6h4v6" />
+                      </svg>
+                    </div>
+                    <h3>Dealerships</h3>
+                    <p>
+                      Sell with provable integrity. Differentiate your
+                      inventory with on-chain certification.
+                    </p>
+                  </article>
+                  <article className="audience-card glass-card">
+                    <div className="audience-icon">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M14 7l3 3-9 9H5v-3zM14 7l3-3 3 3-3 3z" />
+                      </svg>
+                    </div>
+                    <h3>Mechanics</h3>
+                    <p>
+                      Prove the work you've done. Build reputation directly on
+                      the blockchain.
+                    </p>
+                  </article>
+                  <article className="audience-card glass-card">
+                    <div className="audience-icon">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 2l9 4v6c0 5-4 9-9 10C7 21 3 17 3 12V6z" />
+                        <path d="M9 12l2 2 4-4" />
+                      </svg>
+                    </div>
+                    <h3>Insurance</h3>
+                    <p>
+                      Accurate claims on accurate data. Spot inconsistencies
+                      instantly.
+                    </p>
+                  </article>
+                </div>
+              </section>
+
+              <section id="contact" className="landing-final-cta">
+                <div className="final-cta-card">
+                  <h2>Ready to end odometer fraud?</h2>
+                  <p>
+                    Join AutoLedger — the blockchain-verified mileage registry
+                    built for the real world.
+                  </p>
+                  <div className="final-cta-actions">
+                    <button
+                      type="button"
+                      className="btn btn-primary hero-btn"
+                      onClick={() => {
+                        setAuthView("register");
+                        setShowAuthForm(true);
+                      }}
+                    >
+                      Create free account
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-ghost hero-btn"
+                      onClick={() => {
+                        setAuthView("login");
+                        setShowAuthForm(true);
+                      }}
+                    >
+                      I already have an account
+                    </button>
+                  </div>
+                </div>
               </section>
             </>
           )}

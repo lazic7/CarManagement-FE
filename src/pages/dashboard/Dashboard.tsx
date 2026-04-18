@@ -1,29 +1,56 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import toast from "react-hot-toast";
 import "../../App.css";
 import { submitMileageOnChain } from "../../web3/mileageContract";
 import { buildTxUrl, buildAddressUrl, shortenHash } from "../../utils/explorer";
 import { celebrate } from "../../utils/celebrate";
+import { WalletStatusBanner } from "./WalletStatusBanner";
+import { AdminStatsCard } from "./AdminStatsCard";
+import { RecentActivity } from "./RecentActivity";
+import { StepIndicator, type SubmitStep } from "./StepIndicator";
+import {
+  loadHistory,
+  saveEntry,
+  type AdminHistoryEntry,
+} from "./adminHistory";
 
 export const Dashboard = () => {
   const [vin, setVin] = useState("");
   const [mileage, setMileage] = useState("");
   const [submitError, setSubmitError] = useState("");
-  const [submitStatus, setSubmitStatus] = useState("");
   const [txHash, setTxHash] = useState("");
   const [walletAddress, setWalletAddress] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [step, setStep] = useState<SubmitStep>("idle");
+  const [history, setHistory] = useState<AdminHistoryEntry[]>([]);
+  const [justSubmitted, setJustSubmitted] = useState(false);
+
+  useEffect(() => {
+    setHistory(loadHistory());
+  }, []);
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authRole");
+    localStorage.removeItem("authRoles");
+  };
+
+  const handleReset = () => {
+    setVin("");
+    setMileage("");
+    setSubmitError("");
+    setTxHash("");
+    setWalletAddress("");
+    setStep("idle");
+    setJustSubmitted(false);
   };
 
   const handleSubmit = async () => {
     setSubmitError("");
-    setSubmitStatus("");
     setTxHash("");
     setWalletAddress("");
+    setJustSubmitted(false);
 
     const normalizedVin = vin.trim().toUpperCase();
     const parsedMileage = Number(mileage);
@@ -45,14 +72,14 @@ export const Dashboard = () => {
     }
 
     setIsSubmitting(true);
-    setSubmitStatus("Opening MetaMask and preparing transaction...");
+    setStep("metamask");
     const pendingToast = toast.loading("Opening MetaMask…");
 
     try {
       const result = await submitMileageOnChain(normalizedVin, parsedMileage, {
         onTransactionSubmitted: (hash) => {
           setTxHash(hash);
-          setSubmitStatus("Transaction submitted. Waiting for confirmation...");
+          setStep("submitted");
           toast.loading("Transaction submitted, waiting for confirmation…", {
             id: pendingToast,
           });
@@ -60,21 +87,28 @@ export const Dashboard = () => {
       });
 
       setWalletAddress(result.walletAddress);
+      setStep("done");
+
+      const entry: AdminHistoryEntry = {
+        vin: normalizedVin,
+        mileage: parsedMileage,
+        txHash: result.txHash,
+        walletAddress: result.walletAddress,
+        timestamp: Date.now(),
+        status: result.confirmationStatus,
+      };
+      setHistory(saveEntry(entry));
 
       if (result.confirmationStatus === "confirmed") {
-        setSubmitStatus("Mileage successfully written to blockchain.");
         toast.success("Mileage recorded on blockchain!", { id: pendingToast });
         celebrate();
       } else {
-        setSubmitStatus(
-          "Transaction sent, but confirmation is taking longer than expected. Check tx hash in explorer.",
-        );
         toast.success("Transaction sent. Confirmation is pending.", {
           id: pendingToast,
         });
       }
 
-      setMileage("");
+      setJustSubmitted(true);
     } catch (error) {
       const code =
         typeof error === "object" && error !== null && "code" in error
@@ -83,8 +117,8 @@ export const Dashboard = () => {
 
       if (code === "4001" || code === "ACTION_REJECTED") {
         setSubmitError("Transaction was rejected in MetaMask.");
-        setSubmitStatus("");
         toast.error("Rejected in MetaMask.", { id: pendingToast });
+        setStep("idle");
         return;
       }
 
@@ -93,8 +127,8 @@ export const Dashboard = () => {
           ? error.message
           : "Transaction failed in MetaMask.";
       setSubmitError(message);
-      setSubmitStatus("");
       toast.error(message, { id: pendingToast });
+      setStep("idle");
     } finally {
       setIsSubmitting(false);
     }
@@ -112,9 +146,20 @@ export const Dashboard = () => {
         </nav>
       </header>
       <main>
-        <div className="dashboard-grid">
-          <div className="glass-card">
-            <h2>Submit Mileage to Blockchain</h2>
+        <WalletStatusBanner />
+        <AdminStatsCard history={history} />
+
+        <div className="admin-grid">
+          <div className="glass-card admin-form-card">
+            <div className="admin-form-header">
+              <h2>Submit mileage to blockchain</h2>
+              <p className="admin-form-sub">
+                Records are permanent and cannot be altered once confirmed.
+              </p>
+            </div>
+
+            <StepIndicator step={step} />
+
             <div className="form-group">
               <label htmlFor="admin-vin">VIN Number</label>
               <input
@@ -124,6 +169,7 @@ export const Dashboard = () => {
                 placeholder="e.g. 1HGBH41JXMN109186"
                 value={vin}
                 onChange={(event) => setVin(event.target.value)}
+                disabled={isSubmitting}
               />
             </div>
             <div className="form-group">
@@ -136,25 +182,43 @@ export const Dashboard = () => {
                 min="0"
                 value={mileage}
                 onChange={(event) => setMileage(event.target.value)}
+                disabled={isSubmitting}
               />
             </div>
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={isSubmitting}
-              onClick={handleSubmit}
-            >
-              {isSubmitting ? "Waiting for MetaMask..." : "Save to Blockchain"}
-            </button>
+
+            {!justSubmitted ? (
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={isSubmitting}
+                onClick={handleSubmit}
+              >
+                {isSubmitting ? "Waiting for MetaMask..." : "Save to Blockchain"}
+              </button>
+            ) : (
+              <div className="actions-row">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={handleReset}
+                >
+                  Submit another
+                </button>
+                <a
+                  className="btn btn-primary"
+                  href={buildTxUrl(txHash)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View on Explorer
+                </a>
+              </div>
+            )}
 
             {submitError && (
               <p className="auth-feedback ledger-feedback">{submitError}</p>
             )}
-            {submitStatus && (
-              <p className="auth-feedback auth-feedback-success ledger-feedback">
-                {submitStatus}
-              </p>
-            )}
+
             {walletAddress && (
               <p className="ledger-meta">
                 <span className="meta-label">Wallet</span>
@@ -165,7 +229,11 @@ export const Dashboard = () => {
                   rel="noopener noreferrer"
                 >
                   <code>{shortenHash(walletAddress)}</code>
-                  <svg className="external-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg
+                    className="external-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <path d="M14 3h7v7" />
                     <path d="M10 14L21 3" />
                     <path d="M21 14v7h-7" />
@@ -184,19 +252,17 @@ export const Dashboard = () => {
                   rel="noopener noreferrer"
                 >
                   <code>{shortenHash(txHash, 10, 8)}</code>
-                  <svg className="external-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <svg
+                    className="external-icon"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
                     <path d="M14 3h7v7" />
                     <path d="M10 14L21 3" />
                     <path d="M21 14v7h-7" />
                     <path d="M3 10V3h7" />
                   </svg>
                 </a>
-                <span className="verified-chip">
-                  <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M20 6L9 17l-5-5" />
-                  </svg>
-                  View on Volta Explorer
-                </span>
               </p>
             )}
 
@@ -205,12 +271,13 @@ export const Dashboard = () => {
                 🦊
               </div>
               <p>
-                You will be asked to confirm this transaction in MetaMask. This
-                will write the mileage record to the blockchain and cannot be
-                undone.
+                You will be asked to confirm this transaction in MetaMask. The
+                record will be written to the blockchain permanently.
               </p>
             </div>
           </div>
+
+          <RecentActivity history={history} />
         </div>
       </main>
     </section>

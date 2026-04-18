@@ -6,15 +6,17 @@ const CONTRACT_ADDRESS =
   import.meta.env.VITE_MILEAGE_CONTRACT_ADDRESS ?? "";
 const EXPLORER_BASE = "https://volta-explorer.energyweb.org";
 
-const BRAND_CYAN: [number, number, number] = [0, 212, 255];
-const BRAND_PURPLE: [number, number, number] = [139, 92, 246];
-const BRAND_BG_DARK: [number, number, number] = [10, 10, 15];
-const BRAND_BG_DEEP: [number, number, number] = [20, 20, 35];
-const BRAND_DARK: [number, number, number] = [17, 24, 39];
-const BRAND_MUTED: [number, number, number] = [100, 116, 139];
-const BRAND_SUCCESS: [number, number, number] = [16, 185, 129];
-const SURFACE_SOFT: [number, number, number] = [240, 250, 253];
-const SURFACE_ALT: [number, number, number] = [248, 250, 252];
+type Rgb = [number, number, number];
+
+const BRAND_CYAN: Rgb = [0, 212, 255];
+const BRAND_PURPLE: Rgb = [139, 92, 246];
+const BRAND_BG_DARK: Rgb = [10, 10, 15];
+const BRAND_DARK: Rgb = [17, 24, 39];
+const BRAND_SOFT_DARK: Rgb = [51, 65, 85];
+const BRAND_MUTED: Rgb = [100, 116, 139];
+const BRAND_SUCCESS: Rgb = [16, 185, 129];
+const SURFACE_ALT: Rgb = [248, 250, 252];
+const BORDER_LIGHT: Rgb = [226, 232, 240];
 
 const formatKm = (value: number) => `${value.toLocaleString("en-US")} km`;
 
@@ -31,8 +33,26 @@ const formatTimestamp = (timestamp: number) => {
 
 const shortenAddress = (address: string) =>
   address.length > 14
-    ? `${address.slice(0, 8)}…${address.slice(-6)}`
+    ? `${address.slice(0, 8)}...${address.slice(-6)}`
     : address;
+
+const drawCheckmark = (
+  doc: jsPDF,
+  centerX: number,
+  centerY: number,
+  size: number,
+  color: Rgb,
+) => {
+  doc.setDrawColor(...color);
+  doc.setLineWidth(size * 0.18);
+  doc.setLineCap("round");
+  doc.setLineJoin("round");
+  const s = size / 2;
+  doc.line(centerX - s * 0.9, centerY, centerX - s * 0.2, centerY + s * 0.7);
+  doc.line(centerX - s * 0.2, centerY + s * 0.7, centerX + s, centerY - s * 0.6);
+  doc.setLineWidth(0.1);
+  doc.setLineCap("butt");
+};
 
 export const generateVehiclePassport = (
   vin: string,
@@ -41,68 +61,97 @@ export const generateVehiclePassport = (
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
-  const margin = 40;
+  const margin = 44;
+  const contentWidth = pageWidth - margin * 2;
 
+  // ───────────────────────── HEADER ─────────────────────────
   doc.setFillColor(...BRAND_BG_DARK);
-  doc.rect(0, 0, pageWidth, 130, "F");
+  doc.rect(0, 0, pageWidth, 120, "F");
 
-  doc.setFillColor(...BRAND_BG_DEEP);
-  doc.rect(0, 100, pageWidth, 30, "F");
+  // Subtle grid of radial accent dots in header
+  doc.setFillColor(0, 212, 255);
+  for (let i = 0; i < 40; i += 1) {
+    const x = (pageWidth / 40) * i + 8;
+    doc.setGState(doc.GState({ opacity: 0.06 + (i % 5) * 0.02 }));
+    doc.circle(x, 28 + (i % 3) * 22, 1.1, "F");
+  }
+  doc.setGState(doc.GState({ opacity: 1 }));
 
+  // Gradient bottom accent bar (simulated with two rects)
   doc.setFillColor(...BRAND_CYAN);
-  doc.rect(0, 130, pageWidth, 2, "F");
+  doc.rect(0, 119, pageWidth * 0.55, 2, "F");
   doc.setFillColor(...BRAND_PURPLE);
-  doc.rect(pageWidth * 0.5, 130, pageWidth * 0.5, 2, "F");
+  doc.rect(pageWidth * 0.55, 119, pageWidth * 0.45, 2, "F");
 
-  doc.setFillColor(...BRAND_CYAN);
-  doc.roundedRect(margin, 30, 6, 42, 3, 3, "F");
-
+  // Logo text
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(24);
+  doc.setFontSize(22);
   doc.setTextColor(255, 255, 255);
-  doc.text("AutoLedger", margin + 18, 55);
+  doc.text("AutoLedger", margin, 58);
 
   doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(...BRAND_CYAN);
+  doc.text("VEHICLE PASSPORT", margin, 72);
+
+  // Right side header
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(150, 165, 190);
+  doc.text("GENERATED", pageWidth - margin, 50, { align: "right" });
+
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  doc.setTextColor(...BRAND_CYAN);
-  doc.text("VEHICLE PASSPORT", margin + 18, 72);
-
-  doc.setFontSize(9);
-  doc.setTextColor(200, 210, 230);
+  doc.setTextColor(255, 255, 255);
   doc.text(
-    `Generated  ${new Date().toLocaleString("en-GB")}`,
+    new Date().toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
     pageWidth - margin,
-    55,
-    { align: "right" },
-  );
-  doc.setTextColor(...BRAND_CYAN);
-  doc.text(
-    "Secured by Energy Web Volta Blockchain",
-    pageWidth - margin,
-    72,
+    65,
     { align: "right" },
   );
 
-  let cursorY = 170;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...BRAND_CYAN);
+  doc.text(
+    "Energy Web Volta Blockchain",
+    pageWidth - margin,
+    77,
+    { align: "right" },
+  );
 
-  doc.setFillColor(...SURFACE_SOFT);
-  doc.roundedRect(margin, cursorY - 22, pageWidth - margin * 2, 64, 8, 8, "F");
-  doc.setDrawColor(...BRAND_CYAN);
-  doc.setLineWidth(0.6);
-  doc.line(margin, cursorY - 22, margin, cursorY + 42);
+  // ──────────────────────── VIN CARD ────────────────────────
+  let cursorY = 160;
+
+  doc.setFillColor(255, 255, 255);
+  doc.setDrawColor(...BORDER_LIGHT);
+  doc.setLineWidth(0.8);
+  doc.roundedRect(margin, cursorY - 26, contentWidth, 72, 10, 10, "FD");
   doc.setLineWidth(0.1);
+
+  // Left accent bar
+  doc.setFillColor(...BRAND_CYAN);
+  doc.roundedRect(margin + 2, cursorY - 22, 4, 64, 2, 2, "F");
 
   doc.setTextColor(...BRAND_MUTED);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.text("VEHICLE IDENTIFICATION NUMBER", margin + 16, cursorY - 4);
+  doc.setFontSize(7.5);
+  doc.text("VEHICLE IDENTIFICATION NUMBER", margin + 18, cursorY - 8);
 
   doc.setTextColor(...BRAND_DARK);
   doc.setFont("courier", "bold");
   doc.setFontSize(22);
-  doc.text(vin, margin + 16, cursorY + 24);
-  cursorY += 68;
+  doc.text(vin, margin + 18, cursorY + 20);
 
+  cursorY += 72;
+
+  // ─────────────────────── STATS TILES ───────────────────────
   const sorted = [...records].sort((a, b) => a.timestamp - b.timestamp);
   const latest = sorted[sorted.length - 1];
   const earliest = sorted[0];
@@ -110,73 +159,129 @@ export const generateVehiclePassport = (
   const firstDate = earliest ? formatTimestamp(earliest.timestamp) : "—";
 
   const statsStartY = cursorY;
-  const statWidth = (pageWidth - margin * 2 - 20) / 3;
+  const statGap = 12;
+  const statWidth = (contentWidth - statGap * 2) / 3;
 
   const drawStat = (
     label: string,
     value: string,
     index: number,
-    accent: [number, number, number],
+    accent: Rgb,
   ) => {
-    const x = margin + index * (statWidth + 10);
+    const x = margin + index * (statWidth + statGap);
     doc.setFillColor(...SURFACE_ALT);
-    doc.roundedRect(x, statsStartY, statWidth, 78, 8, 8, "F");
+    doc.setDrawColor(...BORDER_LIGHT);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(x, statsStartY, statWidth, 74, 10, 10, "FD");
+    doc.setLineWidth(0.1);
 
+    // Accent dot (top-left)
     doc.setFillColor(...accent);
-    doc.roundedRect(x, statsStartY, 3, 78, 1.5, 1.5, "F");
+    doc.circle(x + 16, statsStartY + 18, 3.5, "F");
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7);
     doc.setTextColor(...BRAND_MUTED);
-    doc.text(label.toUpperCase(), x + 14, statsStartY + 20);
+    doc.text(label.toUpperCase(), x + 26, statsStartY + 21);
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(15);
-    doc.setTextColor(...accent);
-    doc.text(value, x + 14, statsStartY + 48);
+    doc.setFontSize(16);
+    doc.setTextColor(...BRAND_DARK);
+    doc.text(value, x + 16, statsStartY + 52);
   };
 
   drawStat("Current mileage", formatKm(currentKm), 0, BRAND_CYAN);
-  drawStat(
-    "Verified records",
-    String(sorted.length),
-    1,
-    BRAND_PURPLE,
-  );
+  drawStat("Verified records", String(sorted.length), 1, BRAND_PURPLE);
   drawStat("First record", firstDate, 2, BRAND_SUCCESS);
 
-  cursorY = statsStartY + 108;
+  cursorY = statsStartY + 96;
 
+  // ───────────────────── VERIFIED BADGE ─────────────────────
+  const badgeHeight = 54;
   doc.setFillColor(...BRAND_BG_DARK);
-  doc.roundedRect(margin, cursorY, pageWidth - margin * 2, 42, 8, 8, "F");
+  doc.roundedRect(margin, cursorY, contentWidth, badgeHeight, 10, 10, "F");
+
+  // Glow accent stripe on right edge (gradient simulation)
   doc.setFillColor(...BRAND_CYAN);
-  doc.roundedRect(margin, cursorY, 3, 42, 1.5, 1.5, "F");
+  doc.setGState(doc.GState({ opacity: 0.12 }));
+  doc.roundedRect(margin + contentWidth - 90, cursorY, 90, badgeHeight, 10, 10, "F");
+  doc.setGState(doc.GState({ opacity: 1 }));
+
+  // Checkmark circle indicator
+  doc.setFillColor(...BRAND_SUCCESS);
+  doc.circle(margin + 24, cursorY + badgeHeight / 2, 10, "F");
+  drawCheckmark(doc, margin + 24, cursorY + badgeHeight / 2, 10, [255, 255, 255]);
+
+  // Glow ring (subtle)
+  doc.setDrawColor(...BRAND_SUCCESS);
+  doc.setGState(doc.GState({ opacity: 0.35 }));
+  doc.setLineWidth(1.5);
+  doc.circle(margin + 24, cursorY + badgeHeight / 2, 14, "S");
+  doc.setGState(doc.GState({ opacity: 1 }));
+  doc.setLineWidth(0.1);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
-  doc.setTextColor(...BRAND_CYAN);
-  doc.text("◆  VERIFIED ON ENERGY WEB VOLTA BLOCKCHAIN", margin + 16, cursorY + 18);
-  doc.setFont("courier", "normal");
+  doc.setTextColor(255, 255, 255);
+  doc.text("Verified on-chain", margin + 44, cursorY + 22);
+
+  doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
+  doc.setTextColor(150, 165, 190);
+  doc.text("Immutable record · Energy Web Volta Blockchain", margin + 44, cursorY + 36);
+
+  // Contract address on the right
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(...BRAND_CYAN);
+  doc.text("CONTRACT", pageWidth - margin - 8, cursorY + 20, { align: "right" });
+
+  doc.setFont("courier", "normal");
+  doc.setFontSize(7.5);
   doc.setTextColor(200, 210, 230);
   doc.text(
-    `Contract  ${CONTRACT_ADDRESS}`,
-    margin + 16,
-    cursorY + 32,
+    shortenAddress(CONTRACT_ADDRESS),
+    pageWidth - margin - 8,
+    cursorY + 36,
+    { align: "right" },
   );
 
-  cursorY += 62;
+  cursorY += badgeHeight + 24;
 
+  // ───────────────────── HISTORY HEADING ─────────────────────
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(...BRAND_DARK);
   doc.text("MILEAGE HISTORY", margin, cursorY);
-  doc.setDrawColor(...BRAND_CYAN);
-  doc.setLineWidth(1.5);
-  doc.line(margin, cursorY + 4, margin + 80, cursorY + 4);
-  doc.setLineWidth(0.1);
-  cursorY += 14;
 
+  // Cyan accent line under heading
+  doc.setFillColor(...BRAND_CYAN);
+  doc.rect(margin, cursorY + 4, 36, 2, "F");
+  doc.setFillColor(...BRAND_PURPLE);
+  doc.rect(margin + 36, cursorY + 4, 24, 2, "F");
+
+  // Record count chip (right)
+  const chipW = 90;
+  const chipH = 16;
+  const chipX = pageWidth - margin - chipW;
+  const chipY = cursorY - 10;
+  doc.setFillColor(...SURFACE_ALT);
+  doc.setDrawColor(...BORDER_LIGHT);
+  doc.setLineWidth(0.5);
+  doc.roundedRect(chipX, chipY, chipW, chipH, 8, 8, "FD");
+  doc.setLineWidth(0.1);
+
+  doc.setFillColor(...BRAND_CYAN);
+  doc.circle(chipX + 10, chipY + chipH / 2, 2.5, "F");
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(...BRAND_SOFT_DARK);
+  doc.text(`${sorted.length} RECORDS ON CHAIN`, chipX + 18, chipY + 11);
+
+  cursorY += 16;
+
+  // ───────────────────────── TABLE ─────────────────────────
   const historyDesc = sorted.slice().reverse();
 
   autoTable(doc, {
@@ -192,71 +297,81 @@ export const generateVehiclePassport = (
     styles: {
       font: "helvetica",
       fontSize: 9,
-      cellPadding: 8,
+      cellPadding: { top: 9, right: 10, bottom: 9, left: 10 },
       textColor: BRAND_DARK,
+      lineColor: BORDER_LIGHT,
+      lineWidth: { bottom: 0.4 },
     },
     headStyles: {
       fillColor: BRAND_BG_DARK,
       textColor: BRAND_CYAN,
       fontStyle: "bold",
-      fontSize: 8,
-      cellPadding: 9,
+      fontSize: 7.5,
+      cellPadding: { top: 10, right: 10, bottom: 10, left: 10 },
+      lineWidth: 0,
     },
     bodyStyles: {
       fillColor: [255, 255, 255],
     },
     alternateRowStyles: { fillColor: SURFACE_ALT },
     columnStyles: {
-      0: { fontStyle: "bold", textColor: BRAND_CYAN, cellWidth: 30 },
+      0: {
+        fontStyle: "bold",
+        textColor: BRAND_CYAN,
+        cellWidth: 32,
+        halign: "center",
+      },
       2: { fontStyle: "bold" },
-      3: { font: "courier", fontSize: 8, textColor: BRAND_MUTED },
+      3: { font: "courier", fontSize: 8, textColor: BRAND_SOFT_DARK },
     },
     margin: { left: margin, right: margin },
   });
 
-  const finalY =
-    (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable
-      ?.finalY ?? cursorY;
-
+  // ───────────────────────── FOOTER ─────────────────────────
+  const footerY = pageHeight - 66;
   doc.setFillColor(...BRAND_BG_DARK);
-  doc.rect(0, pageHeight - 70, pageWidth, 70, "F");
+  doc.rect(0, footerY, pageWidth, 66, "F");
+
+  // Top accent on footer
   doc.setFillColor(...BRAND_CYAN);
-  doc.rect(0, pageHeight - 70, pageWidth, 1.5, "F");
+  doc.rect(0, footerY, pageWidth * 0.45, 1.5, "F");
+  doc.setFillColor(...BRAND_PURPLE);
+  doc.rect(pageWidth * 0.45, footerY, pageWidth * 0.55, 1.5, "F");
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
-  doc.setTextColor(180, 195, 220);
+  doc.setTextColor(160, 175, 200);
   doc.text(
-    "This record is immutable and cryptographically secured on the Energy Web Volta blockchain. Any attempt to alter historical entries is rejected by the smart contract.",
+    "This record is cryptographically sealed on the Energy Web Volta blockchain. Any attempt to alter historical entries is rejected by the smart contract.",
     margin,
-    pageHeight - 48,
-    { maxWidth: pageWidth - margin * 2 },
+    footerY + 22,
+    { maxWidth: contentWidth },
   );
+
+  // Verify row
+  doc.setFillColor(...BRAND_CYAN);
+  doc.circle(margin + 4, footerY + 48, 2, "F");
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7);
   doc.setTextColor(...BRAND_CYAN);
-  doc.text("VERIFY ONLINE", margin, pageHeight - 22);
+  doc.text("VERIFY ONLINE", margin + 12, footerY + 50);
 
   doc.setFont("courier", "normal");
-  doc.setFontSize(7.5);
+  doc.setFontSize(7);
   doc.setTextColor(200, 210, 230);
   doc.text(
     `${EXPLORER_BASE}/address/${CONTRACT_ADDRESS}`,
-    margin + 62,
-    pageHeight - 22,
+    margin + 74,
+    footerY + 50,
   );
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(...BRAND_CYAN);
-  doc.text("AutoLedger", pageWidth - margin, pageHeight - 22, {
+  doc.text("AutoLedger", pageWidth - margin, footerY + 50, {
     align: "right",
   });
-
-  if (finalY > pageHeight - 100) {
-    // Table already paginated by autoTable; footer drawn on last page by jsPDF default position above.
-  }
 
   const safeVin = vin.replace(/[^A-Z0-9]/gi, "_");
   doc.save(`AutoLedger_Passport_${safeVin}.pdf`);

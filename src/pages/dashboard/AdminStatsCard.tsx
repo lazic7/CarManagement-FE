@@ -2,6 +2,7 @@ import type { AdminHistoryEntry } from "./adminHistory";
 
 interface AdminStatsCardProps {
   history: AdminHistoryEntry[];
+  isSyncing?: boolean;
 }
 
 const formatRelative = (timestamp: number) => {
@@ -17,7 +18,7 @@ const formatRelative = (timestamp: number) => {
   return new Date(timestamp).toLocaleDateString("en-GB");
 };
 
-export const AdminStatsCard = ({ history }: AdminStatsCardProps) => {
+export const AdminStatsCard = ({ history, isSyncing }: AdminStatsCardProps) => {
   const totalTxs = history.length;
   const uniqueVins = new Set(history.map((entry) => entry.vin)).size;
   const latest = history[0];
@@ -28,6 +29,23 @@ export const AdminStatsCard = ({ history }: AdminStatsCardProps) => {
 
   return (
     <div className="admin-stats-card">
+      <div className="admin-stats-meta">
+        <span className="admin-stats-source">
+          {isSyncing ? (
+            <>
+              <span className="sync-spinner" aria-hidden="true" />
+              Syncing from blockchain…
+            </>
+          ) : totalTxs > 0 ? (
+            <>
+              <span className="sync-dot" aria-hidden="true" />
+              Live from Volta blockchain
+            </>
+          ) : (
+            "Submit your first record to see stats"
+          )}
+        </span>
+      </div>
       <div className="admin-stats-grid">
         <div className="stat-tile">
           <span className="stat-tile-label">Records submitted</span>

@@ -5,6 +5,9 @@ import "../../App.css";
 import { submitMileageOnChain } from "../../web3/mileageContract";
 import { buildTxUrl, buildAddressUrl, shortenHash } from "../../utils/explorer";
 import { celebrate } from "../../utils/celebrate";
+import { clearAuthSession } from "../../utils/auth";
+import { fetchAdminHistoryFromChain } from "../../web3/mileageEvents";
+import { useWalletAddress } from "../../hooks/useWalletAddress";
 import { WalletStatusBanner } from "./WalletStatusBanner";
 import { AdminStatsCard } from "./AdminStatsCard";
 import { RecentActivity } from "./RecentActivity";
@@ -15,6 +18,17 @@ import {
   type AdminHistoryEntry,
 } from "./adminHistory";
 
+const mergeHistories = (
+  chain: AdminHistoryEntry[],
+  local: AdminHistoryEntry[],
+): AdminHistoryEntry[] => {
+  const chainHashes = new Set(chain.map((entry) => entry.txHash.toLowerCase()));
+  const localOnly = local.filter(
+    (entry) => !chainHashes.has(entry.txHash.toLowerCase()),
+  );
+  return [...chain, ...localOnly].sort((a, b) => b.timestamp - a.timestamp);
+};
+
 export const Dashboard = () => {
   const [vin, setVin] = useState("");
   const [mileage, setMileage] = useState("");
@@ -24,16 +38,36 @@ export const Dashboard = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState<SubmitStep>("idle");
   const [history, setHistory] = useState<AdminHistoryEntry[]>([]);
+  const [isSyncingChain, setIsSyncingChain] = useState(false);
   const [justSubmitted, setJustSubmitted] = useState(false);
+  const connectedWallet = useWalletAddress();
 
   useEffect(() => {
     setHistory(loadHistory());
   }, []);
 
+  useEffect(() => {
+    if (!connectedWallet) return;
+    let cancelled = false;
+    setIsSyncingChain(true);
+    fetchAdminHistoryFromChain(connectedWallet)
+      .then((chainEntries) => {
+        if (cancelled) return;
+        setHistory((previous) => mergeHistories(chainEntries, previous));
+      })
+      .catch(() => {
+        /* fallback: keep local history */
+      })
+      .finally(() => {
+        if (!cancelled) setIsSyncingChain(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [connectedWallet]);
+
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("authRole");
-    localStorage.removeItem("authRoles");
+    clearAuthSession();
   };
 
   const handleReset = () => {
@@ -147,7 +181,7 @@ export const Dashboard = () => {
       </header>
       <main>
         <WalletStatusBanner />
-        <AdminStatsCard history={history} />
+        <AdminStatsCard history={history} isSyncing={isSyncingChain} />
 
         <div className="admin-grid">
           <div className="glass-card admin-form-card">

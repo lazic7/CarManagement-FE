@@ -10,13 +10,40 @@ export interface AdminHistoryEntry {
   status: "confirmed" | "pending";
 }
 
+const dedupeByTxHash = (
+  entries: AdminHistoryEntry[],
+): AdminHistoryEntry[] => {
+  const seen = new Set<string>();
+  const deduped: AdminHistoryEntry[] = [];
+  for (const entry of entries) {
+    const key = entry.txHash?.toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(entry);
+  }
+  return deduped;
+};
+
+const persist = (entries: AdminHistoryEntry[]): void => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  } catch {
+    // Storage may be unavailable; fail silently.
+  }
+};
+
 export const loadHistory = (): AdminHistoryEntry[] => {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed as AdminHistoryEntry[];
+    const entries = parsed as AdminHistoryEntry[];
+    const deduped = dedupeByTxHash(entries);
+    if (deduped.length !== entries.length) {
+      persist(deduped);
+    }
+    return deduped;
   } catch {
     return [];
   }
@@ -24,11 +51,11 @@ export const loadHistory = (): AdminHistoryEntry[] => {
 
 export const saveEntry = (entry: AdminHistoryEntry): AdminHistoryEntry[] => {
   const current = loadHistory();
-  const next = [entry, ...current].slice(0, MAX_ENTRIES);
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    // Storage may be unavailable; fail silently.
-  }
+  const withoutDuplicate = current.filter(
+    (existing) =>
+      existing.txHash.toLowerCase() !== entry.txHash.toLowerCase(),
+  );
+  const next = [entry, ...withoutDuplicate].slice(0, MAX_ENTRIES);
+  persist(next);
   return next;
 };

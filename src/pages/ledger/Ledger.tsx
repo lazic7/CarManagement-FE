@@ -6,8 +6,14 @@ import { getMileageRecordsByVin } from "../../api/records";
 import type { MileageRecordDto } from "../../api/dto";
 import { generateVehiclePassport } from "../../utils/pdfExport";
 import { buildAddressUrl, shortenHash } from "../../utils/explorer";
+import { clearAuthSession } from "../../utils/auth";
 import { VehicleStatsCard } from "./VehicleStatsCard";
 import { MileageChart } from "./MileageChart";
+import {
+  StatsCardSkeleton,
+  ChartSkeleton,
+  TimelineSkeleton,
+} from "./LedgerSkeletons";
 
 export const Ledger = () => {
   const [vin, setVin] = useState("");
@@ -17,7 +23,7 @@ export const Ledger = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleLogout = () => {
-    localStorage.clear();
+    clearAuthSession();
   };
 
   const sortedRecords = useMemo(
@@ -109,17 +115,24 @@ export const Ledger = () => {
               <p className="auth-feedback ledger-feedback">{errorMessage}</p>
             )}
 
-            {sortedRecords.length > 0 && (
+            {isLoading && sortedRecords.length === 0 && (
+              <>
+                <StatsCardSkeleton />
+                <ChartSkeleton />
+              </>
+            )}
+
+            {!isLoading && sortedRecords.length > 0 && (
               <VehicleStatsCard vin={fetchedVin} records={sortedRecords} />
             )}
-            {sortedRecords.length >= 2 && (
+            {!isLoading && sortedRecords.length >= 2 && (
               <MileageChart records={sortedRecords} />
             )}
 
             <div className="results-section">
               <div className="results-header">
                 <h3>Mileage history</h3>
-                {sortedRecords.length > 0 && (
+                {!isLoading && sortedRecords.length > 0 && (
                   <button
                     type="button"
                     className="btn btn-secondary btn-inline"
@@ -135,7 +148,9 @@ export const Ledger = () => {
                   </button>
                 )}
               </div>
-              {sortedRecords.length === 0 ? (
+              {isLoading ? (
+                <TimelineSkeleton rows={3} />
+              ) : sortedRecords.length === 0 ? (
                 <div className="empty-state">
                   <p>
                     Enter a VIN and click <strong>Fetch Vehicle Data</strong> to

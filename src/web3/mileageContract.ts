@@ -139,6 +139,38 @@ const isNonceConflictError = (error: unknown): boolean => {
   );
 };
 
+const mapContractError = (error: unknown): Error | null => {
+  const rawMessage =
+    typeof error === "object" && error !== null && "message" in error
+      ? String((error as { message?: unknown }).message)
+      : "";
+  const reason =
+    typeof error === "object" && error !== null && "reason" in error
+      ? String((error as { reason?: unknown }).reason ?? "")
+      : "";
+  const combined = `${rawMessage} ${reason}`.toLowerCase();
+
+  if (combined.includes("mileage cannot decrease") || combined.includes("cannot decrease")) {
+    return new Error(
+      "Mileage cannot decrease. This VIN already has a higher mileage recorded on-chain.",
+    );
+  }
+  if (combined.includes("mileage must be greater than 0") || combined.includes("greater than 0")) {
+    return new Error("Mileage must be greater than 0.");
+  }
+  if (combined.includes("insufficient funds")) {
+    return new Error(
+      "Your wallet does not have enough VT (Volta) tokens to pay gas. Get some from a Volta faucet.",
+    );
+  }
+  if (combined.includes("missing revert data") || combined.includes("call_exception")) {
+    return new Error(
+      "The blockchain rejected this transaction. Most likely the mileage is lower than the previously recorded value for this VIN.",
+    );
+  }
+  return null;
+};
+
 export const submitMileageOnChain = async (
   vin: string,
   mileage: number,
@@ -161,6 +193,29 @@ export const submitMileageOnChain = async (
     throw new Error(
       `Write method '${WRITE_METHOD}' not found in contract ABI.`,
     );
+  }
+
+  try {
+    const readProvider = new JsonRpcProvider(VOLTA_RPC_URL, VOLTA_CHAIN_ID);
+    const readContract = new Contract(CONTRACT_ADDRESS, parseAbiFromEnv(), readProvider);
+    const records = (await readContract.getFunction("getRecords").staticCall(vin)) as Array<{
+      mileage: bigint;
+    }>;
+    if (records.length > 0) {
+      const lastMileage = Number(records[records.length - 1].mileage);
+      if (mileage < lastMileage) {
+        throw new Error(
+          `Mileage cannot decrease. Last recorded mileage for VIN ${vin} is ${lastMileage.toLocaleString()} km. You submitted ${mileage.toLocaleString()} km.`,
+        );
+      }
+    }
+  } catch (preflightError) {
+    if (
+      preflightError instanceof Error &&
+      preflightError.message.startsWith("Mileage cannot decrease")
+    ) {
+      throw preflightError;
+    }
   }
 
   const feeData = await provider.getFeeData();
@@ -192,7 +247,8 @@ export const submitMileageOnChain = async (
       const shouldRetry =
         attempt < MAX_SEND_ATTEMPTS - 1 && isNonceConflictError(error);
       if (!shouldRetry) {
-        throw error;
+        const mapped = mapContractError(error);
+        throw mapped ?? error;
       }
     }
   }

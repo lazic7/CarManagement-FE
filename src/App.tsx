@@ -64,6 +64,11 @@ export const App = () => {
         localStorage.setItem("authRoles", JSON.stringify([tokenPayload.role]));
       }
 
+      if (tokenPayload?.role === "superadmin") {
+        navigate("/superadmin");
+        return;
+      }
+
       if (tokenPayload?.role === "admin") {
         navigate("/dashboard");
         return;

@@ -2036,6 +2036,303 @@ footer p {
   transform: translateX(2px);
 }
 
+/* ==========================================================================
+   SUPERADMIN PAGE
+   ========================================================================== */
+
+#superadmin {
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+#superadmin header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+#superadmin header nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+#superadmin header nav a {
+  color: var(--text-primary);
+  text-decoration: none;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  transition: all 0.2s ease;
+}
+
+#superadmin header nav a:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--accent-cyan);
+}
+
+.superadmin-badge {
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.2),
+    rgba(248, 113, 113, 0.2)
+  );
+  color: var(--accent-violet);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.superadmin-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.superadmin-hero {
+  position: relative;
+  padding: 2.25rem 1.75rem;
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      rgba(139, 92, 246, 0.12) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(0, 212, 255, 0.1) 0%,
+      transparent 50%
+    ),
+    rgba(15, 15, 25, 0.6);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.superadmin-hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-purple) 30%,
+    var(--accent-cyan) 70%,
+    transparent 100%
+  );
+}
+
+.superadmin-title {
+  font-size: clamp(1.75rem, 3.2vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0.85rem 0 0.75rem;
+}
+
+.superadmin-sub {
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 0 1.5rem;
+}
+
+.superadmin-stat-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.superadmin-stat {
+  display: flex;
+  flex-direction: column;
+  padding: 0.85rem 1.25rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 12px;
+  min-width: 140px;
+}
+
+.superadmin-stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent-violet);
+  text-shadow: 0 0 18px rgba(139, 92, 246, 0.35);
+  font-variant-numeric: tabular-nums;
+}
+
+.superadmin-stat-label {
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.superadmin-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .superadmin-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.superadmin-form-card {
+  padding: 1.75rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.superadmin-list-card {
+  padding: 1.5rem;
+  background: rgba(15, 15, 25, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+}
+
+.superadmin-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.superadmin-list-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.superadmin-list-count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.superadmin-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.superadmin-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.superadmin-item:hover {
+  border-color: rgba(139, 92, 246, 0.35);
+  transform: translateX(2px);
+}
+
+.superadmin-item-main {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.superadmin-item-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.3),
+    rgba(0, 212, 255, 0.25)
+  );
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.superadmin-item-email {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.superadmin-item-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.superadmin-item-role {
+  font-family: "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent-violet);
+  padding: 0.25rem 0.6rem;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.superadmin-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.skeleton-sa-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+
 #auth.error-page {
   justify-content: center;
   align-items: center;

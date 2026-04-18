@@ -1,11 +1,15 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
+import toast from "react-hot-toast";
 import "../../App.css";
 import { getMileageRecordsByVin } from "../../api/records";
 import type { MileageRecordDto } from "../../api/dto";
+import { generateVehiclePassport } from "../../utils/pdfExport";
+import { buildAddressUrl, shortenHash } from "../../utils/explorer";
 
 export const Ledger = () => {
   const [vin, setVin] = useState("");
+  const [fetchedVin, setFetchedVin] = useState("");
   const [records, setRecords] = useState<MileageRecordDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -30,6 +34,7 @@ export const Ledger = () => {
     setErrorMessage("");
     if (!normalizedVin) {
       setErrorMessage("VIN is required.");
+      toast.error("VIN is required.");
       return;
     }
 
@@ -38,16 +43,30 @@ export const Ledger = () => {
     try {
       const response = await getMileageRecordsByVin(normalizedVin);
       setRecords(response);
+      setFetchedVin(normalizedVin);
+      if (response.length === 0) {
+        toast("No records found for this VIN.", { icon: "ℹ️" });
+      } else {
+        toast.success(`Loaded ${response.length} verified record${response.length === 1 ? "" : "s"}.`);
+      }
     } catch (error) {
       setRecords([]);
-      setErrorMessage(
+      setFetchedVin("");
+      const message =
         error instanceof Error && error.message
           ? error.message
-          : "Failed to fetch mileage data.",
-      );
+          : "Failed to fetch mileage data.";
+      setErrorMessage(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDownloadPassport = () => {
+    if (!fetchedVin || records.length === 0) return;
+    generateVehiclePassport(fetchedVin, records);
+    toast.success("Vehicle Passport downloaded.");
   };
 
   return (
@@ -89,7 +108,24 @@ export const Ledger = () => {
             )}
 
             <div className="results-section">
-              <h3>Mileage history</h3>
+              <div className="results-header">
+                <h3>Mileage history</h3>
+                {sortedRecords.length > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-inline"
+                    onClick={handleDownloadPassport}
+                  >
+                    <span className="btn-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M12 3v12m0 0l-4-4m4 4l4-4" />
+                        <path d="M5 21h14" />
+                      </svg>
+                    </span>
+                    Vehicle Passport
+                  </button>
+                )}
+              </div>
               {sortedRecords.length === 0 ? (
                 <div className="empty-state">
                   <p>
@@ -115,8 +151,27 @@ export const Ledger = () => {
                       <div className="mileage">
                         {record.mileage.toLocaleString()} km
                       </div>
-                      <div className="hash">Mechanic: {record.mechanic}</div>
+                      <div className="hash">
+                        <span className="meta-label">Mechanic</span>
+                        <a
+                          className="explorer-link"
+                          href={buildAddressUrl(record.mechanic)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <code>{shortenHash(record.mechanic)}</code>
+                          <svg className="external-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M14 3h7v7" />
+                            <path d="M10 14L21 3" />
+                            <path d="M21 14v7h-7" />
+                            <path d="M3 10V3h7" />
+                          </svg>
+                        </a>
+                      </div>
                       <span className="status-badge">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" className="badge-icon">
+                          <path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z" />
+                        </svg>
                         Verified on Blockchain
                       </span>
                     </li>

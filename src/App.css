@@ -477,6 +477,186 @@ nav a:hover {
     0 6px 20px rgba(0, 212, 255, 0.4);
 }
 
+.btn-secondary {
+  position: relative;
+  background:
+    linear-gradient(rgba(10, 10, 15, 0.9), rgba(10, 10, 15, 0.9)) padding-box,
+    linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)) border-box;
+  color: var(--text-primary);
+  border: 1px solid transparent;
+  backdrop-filter: blur(12px);
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.3s ease,
+    background 0.2s ease;
+}
+
+.btn-secondary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 255, 0.08),
+    rgba(139, 92, 246, 0.08)
+  );
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 20px rgba(0, 212, 255, 0.25),
+    0 6px 18px rgba(139, 92, 246, 0.2);
+}
+
+.btn-secondary:hover::before {
+  opacity: 1;
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary .btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.55rem;
+  color: var(--accent-cyan);
+  transition: transform 0.25s ease;
+}
+
+.btn-secondary:hover .btn-icon {
+  transform: translateY(2px);
+}
+
+.btn-secondary .btn-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.actions-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.actions-row .btn {
+  width: auto;
+  flex: 1;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.results-header h3 {
+  margin: 0;
+}
+
+.btn-inline {
+  width: auto;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.88rem;
+  border-radius: 8px;
+}
+
+.meta-label {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-right: 0.55rem;
+}
+
+.explorer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  text-decoration: none;
+  color: var(--accent-cyan);
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  background: rgba(0, 212, 255, 0.07);
+  border: 1px solid rgba(0, 212, 255, 0.18);
+  transition: all 0.2s ease;
+  font-family: "SFMono-Regular", "Menlo", "Monaco", "Consolas", monospace;
+}
+
+.explorer-link code {
+  font-size: 0.82rem;
+  font-family: inherit;
+  color: inherit;
+  background: transparent;
+  padding: 0;
+}
+
+.explorer-link:hover {
+  background: rgba(0, 212, 255, 0.14);
+  border-color: rgba(0, 212, 255, 0.5);
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.25);
+}
+
+.external-icon {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.8;
+}
+
+.verified-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 0.65rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 999px;
+}
+
+.verified-chip svg {
+  width: 11px;
+  height: 11px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.badge-icon {
+  width: 11px;
+  height: 11px;
+  margin-right: 0.35rem;
+  fill: currentColor;
+  vertical-align: -1px;
+}
+
 .btn:disabled {
   cursor: not-allowed;
   opacity: 0.7;

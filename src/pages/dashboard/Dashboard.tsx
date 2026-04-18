@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import toast from "react-hot-toast";
 import "../../App.css";
 import { submitMileageOnChain } from "../../web3/mileageContract";
+import { buildTxUrl, buildAddressUrl, shortenHash } from "../../utils/explorer";
+import { celebrate } from "../../utils/celebrate";
 
 export const Dashboard = () => {
   const [vin, setVin] = useState("");
@@ -27,6 +30,7 @@ export const Dashboard = () => {
 
     if (!normalizedVin) {
       setSubmitError("VIN is required.");
+      toast.error("VIN is required.");
       return;
     }
 
@@ -36,17 +40,22 @@ export const Dashboard = () => {
       parsedMileage <= 0
     ) {
       setSubmitError("Mileage must be a whole number greater than 0.");
+      toast.error("Mileage must be a whole number greater than 0.");
       return;
     }
 
     setIsSubmitting(true);
     setSubmitStatus("Opening MetaMask and preparing transaction...");
+    const pendingToast = toast.loading("Opening MetaMask…");
 
     try {
       const result = await submitMileageOnChain(normalizedVin, parsedMileage, {
         onTransactionSubmitted: (hash) => {
           setTxHash(hash);
           setSubmitStatus("Transaction submitted. Waiting for confirmation...");
+          toast.loading("Transaction submitted, waiting for confirmation…", {
+            id: pendingToast,
+          });
         },
       });
 
@@ -54,10 +63,15 @@ export const Dashboard = () => {
 
       if (result.confirmationStatus === "confirmed") {
         setSubmitStatus("Mileage successfully written to blockchain.");
+        toast.success("Mileage recorded on blockchain!", { id: pendingToast });
+        celebrate();
       } else {
         setSubmitStatus(
           "Transaction sent, but confirmation is taking longer than expected. Check tx hash in explorer.",
         );
+        toast.success("Transaction sent. Confirmation is pending.", {
+          id: pendingToast,
+        });
       }
 
       setMileage("");
@@ -70,6 +84,7 @@ export const Dashboard = () => {
       if (code === "4001" || code === "ACTION_REJECTED") {
         setSubmitError("Transaction was rejected in MetaMask.");
         setSubmitStatus("");
+        toast.error("Rejected in MetaMask.", { id: pendingToast });
         return;
       }
 
@@ -79,6 +94,7 @@ export const Dashboard = () => {
           : "Transaction failed in MetaMask.";
       setSubmitError(message);
       setSubmitStatus("");
+      toast.error(message, { id: pendingToast });
     } finally {
       setIsSubmitting(false);
     }
@@ -140,10 +156,48 @@ export const Dashboard = () => {
               </p>
             )}
             {walletAddress && (
-              <p className="ledger-meta">Wallet: {walletAddress}</p>
+              <p className="ledger-meta">
+                <span className="meta-label">Wallet</span>
+                <a
+                  className="explorer-link"
+                  href={buildAddressUrl(walletAddress)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <code>{shortenHash(walletAddress)}</code>
+                  <svg className="external-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14 3h7v7" />
+                    <path d="M10 14L21 3" />
+                    <path d="M21 14v7h-7" />
+                    <path d="M3 10V3h7" />
+                  </svg>
+                </a>
+              </p>
             )}
             {txHash && (
-              <p className="ledger-meta">Transaction hash: {txHash}</p>
+              <p className="ledger-meta">
+                <span className="meta-label">Transaction</span>
+                <a
+                  className="explorer-link"
+                  href={buildTxUrl(txHash)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <code>{shortenHash(txHash, 10, 8)}</code>
+                  <svg className="external-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M14 3h7v7" />
+                    <path d="M10 14L21 3" />
+                    <path d="M21 14v7h-7" />
+                    <path d="M3 10V3h7" />
+                  </svg>
+                </a>
+                <span className="verified-chip">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                  View on Volta Explorer
+                </span>
+              </p>
             )}
 
             <div className="metamask-box">

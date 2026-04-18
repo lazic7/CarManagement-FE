@@ -289,7 +289,7 @@ export const Dashboard = () => {
       <header>
         <div className="logo">AutoLedger</div>
         <nav>
-          <span className="badge">Admin Panel</span>
+          <span className="badge">Mechanic Panel</span>
           <Link to="/" onClick={handleLogout}>
             Logout
           </Link>

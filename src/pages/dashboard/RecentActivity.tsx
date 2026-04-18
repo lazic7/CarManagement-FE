@@ -18,9 +18,9 @@ export const RecentActivity = ({ history }: RecentActivityProps) => {
     <aside className="recent-activity">
       <div className="recent-activity-header">
         <h3>Recent activity</h3>
-        <span className="recent-activity-count">
-          {history.length === 0 ? "No submissions yet" : `Last ${history.length}`}
-        </span>
+        {history.length === 0 && (
+          <span className="recent-activity-count">No submissions yet</span>
+        )}
       </div>
 
       {history.length === 0 ? (

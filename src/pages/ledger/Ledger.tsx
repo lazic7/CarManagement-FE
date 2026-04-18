@@ -1,11 +1,11 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router";
 import toast from "react-hot-toast";
 import "../../App.css";
 import { getMileageRecordsByVin } from "../../api/records";
 import type { MileageRecordDto } from "../../api/dto";
 import { generateVehiclePassport } from "../../utils/pdfExport";
-import { buildAddressUrl, shortenHash } from "../../utils/explorer";
+import { shortenHash } from "../../utils/explorer";
 import { clearAuthSession } from "../../utils/auth";
 import { VehicleStatsCard } from "./VehicleStatsCard";
 import { MileageChart } from "./MileageChart";
@@ -16,11 +16,14 @@ import {
 } from "./LedgerSkeletons";
 
 export const Ledger = () => {
-  const [vin, setVin] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialVin = (searchParams.get("vin") ?? "").trim().toUpperCase();
+  const [vin, setVin] = useState(initialVin);
   const [fetchedVin, setFetchedVin] = useState("");
   const [records, setRecords] = useState<MileageRecordDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const autoFetchTriggered = useRef(false);
 
   const handleLogout = () => {
     clearAuthSession();
@@ -52,6 +55,7 @@ export const Ledger = () => {
       const response = await getMileageRecordsByVin(normalizedVin);
       setRecords(response);
       setFetchedVin(normalizedVin);
+      setSearchParams({ vin: normalizedVin }, { replace: true });
       if (response.length === 0) {
         toast("No records found for this VIN.", { icon: "ℹ️" });
       } else {
@@ -70,6 +74,14 @@ export const Ledger = () => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (autoFetchTriggered.current) return;
+    if (!initialVin) return;
+    autoFetchTriggered.current = true;
+    handleFetchRecords();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialVin]);
 
   const handleDownloadPassport = () => {
     if (!fetchedVin || records.length === 0) return;
@@ -177,20 +189,16 @@ export const Ledger = () => {
                       </div>
                       <div className="hash">
                         <span className="meta-label">Mechanic</span>
-                        <a
-                          className="explorer-link"
-                          href={buildAddressUrl(record.mechanic)}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <Link
+                          to={`/mechanic/${record.mechanic}`}
+                          className="explorer-link mechanic-link"
+                          title="View mechanic profile"
                         >
                           <code>{shortenHash(record.mechanic)}</code>
-                          <svg className="external-icon" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M14 3h7v7" />
-                            <path d="M10 14L21 3" />
-                            <path d="M21 14v7h-7" />
-                            <path d="M3 10V3h7" />
+                          <svg className="mechanic-link-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M5 12h14M13 5l7 7-7 7" />
                           </svg>
-                        </a>
+                        </Link>
                       </div>
                       <span className="status-badge">
                         <svg viewBox="0 0 24 24" aria-hidden="true" className="badge-icon">

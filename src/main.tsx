@@ -10,6 +10,7 @@ import { App } from "./App";
 import {
   Dashboard,
   Ledger,
+  MechanicProfile,
   NotFound,
   RouteErrorPage,
   Unauthorized,
@@ -32,6 +33,12 @@ const router = createBrowserRouter([
     path: "/dashboard",
     Component: Dashboard,
     middleware: [requireAuth(["admin"])],
+    errorElement: <RouteErrorPage />,
+  },
+  {
+    path: "/mechanic/:address",
+    Component: MechanicProfile,
+    middleware: [requireAuth(["user", "admin"])],
     errorElement: <RouteErrorPage />,
   },
   {

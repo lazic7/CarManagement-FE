@@ -2606,6 +2606,345 @@ footer p {
 /* ---------- Responsive admin ---------- */
 
 /* ==========================================================================
+   VIN LOOKUP & MILEAGE DELTA
+   ========================================================================== */
+
+.vin-lookup {
+  margin-top: 0.55rem;
+}
+
+.vin-lookup-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  border-radius: 999px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: all 0.25s ease;
+}
+
+.vin-lookup-pill strong {
+  color: inherit;
+  font-weight: 700;
+}
+
+.vin-lookup-pill svg {
+  width: 12px;
+  height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.vin-lookup-loading {
+  background: rgba(100, 116, 139, 0.1);
+  color: var(--text-secondary);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.vin-lookup-known {
+  background: rgba(0, 212, 255, 0.08);
+  color: var(--accent-cyan);
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+.vin-lookup-new {
+  background: rgba(139, 92, 246, 0.08);
+  color: var(--accent-violet);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.mileage-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.mileage-delta svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.mileage-delta-up {
+  background: rgba(16, 185, 129, 0.08);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.mileage-delta-zero {
+  background: rgba(100, 116, 139, 0.1);
+  color: var(--text-secondary);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.mileage-delta-down {
+  background: rgba(248, 113, 113, 0.1);
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+.mileage-delta-warn {
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  border-color: rgba(251, 191, 36, 0.35);
+}
+
+/* ==========================================================================
+   CONFIRM MODAL
+   ========================================================================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(5, 5, 10, 0.78);
+  backdrop-filter: blur(10px);
+  animation: modal-fade 0.22s ease-out;
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  padding: 2rem 1.75rem 1.5rem;
+  background:
+    radial-gradient(
+      circle at 15% 0%,
+      rgba(0, 212, 255, 0.1) 0%,
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 100% 100%,
+      rgba(139, 92, 246, 0.1) 0%,
+      transparent 45%
+    ),
+    rgba(15, 15, 25, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.6),
+    0 0 60px rgba(0, 212, 255, 0.12);
+  animation: modal-rise 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-cyan) 30%,
+    var(--accent-purple) 70%,
+    transparent 100%
+  );
+}
+
+.modal-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 255, 0.15),
+    rgba(139, 92, 246, 0.15)
+  );
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  color: var(--accent-cyan);
+  margin-bottom: 1.1rem;
+}
+
+.modal-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.modal-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-sub {
+  margin: 0 0 1.5rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.modal-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1rem 1.1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+
+.modal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  min-height: 24px;
+}
+
+.modal-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.modal-value-mono {
+  font-family: "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: transparent;
+  padding: 0;
+  letter-spacing: 0.02em;
+  word-break: break-all;
+  text-align: right;
+}
+
+.modal-value-big {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--accent-cyan);
+  font-variant-numeric: tabular-nums;
+}
+
+.modal-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.modal-delta-up {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.modal-delta-zero {
+  background: rgba(100, 116, 139, 0.15);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modal-delta-down {
+  background: rgba(248, 113, 113, 0.12);
+  color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+}
+
+.modal-warnings {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.modal-warnings li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  color: #fbbf24;
+  line-height: 1.45;
+}
+
+.modal-warnings svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
+/* ==========================================================================
    SKELETONS
    ========================================================================== */
 

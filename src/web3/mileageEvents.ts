@@ -24,6 +24,34 @@ interface MileageAddedArgs {
   mechanic: string;
 }
 
+export interface LastRecordInfo {
+  mileage: number;
+  timestamp: number;
+  mechanic: string;
+}
+
+export const fetchLastRecord = async (
+  vin: string,
+): Promise<LastRecordInfo | null> => {
+  if (!CONTRACT_ADDRESS || !vin) return null;
+  const provider = new JsonRpcProvider(VOLTA_RPC_URL, VOLTA_CHAIN_ID);
+  const contract = new Contract(CONTRACT_ADDRESS, parseAbiFromEnv(), provider);
+  const records = (await contract
+    .getFunction("getRecords")
+    .staticCall(vin)) as Array<{
+    mileage: bigint;
+    timestamp: bigint;
+    mechanic: string;
+  }>;
+  if (!records || records.length === 0) return null;
+  const last = records[records.length - 1];
+  return {
+    mileage: Number(last.mileage),
+    timestamp: Number(last.timestamp),
+    mechanic: String(last.mechanic),
+  };
+};
+
 export const fetchAdminHistoryFromChain = async (
   walletAddress: string,
 ): Promise<AdminHistoryEntry[]> => {

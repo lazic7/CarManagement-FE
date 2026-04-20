@@ -1,4 +1,5 @@
 import type {
+  CurrentUserDto,
   LoginRequestDto,
   LoginResponseDto,
   RegisterRequestDto,
@@ -8,6 +9,7 @@ import { buildApiUrl } from "./client";
 
 const registerEndpoint = buildApiUrl("/auth/register");
 const loginEndpoint = buildApiUrl("/auth/login");
+const meEndpoint = buildApiUrl("/auth/me");
 
 const defaultHeaders = {
   "Content-Type": "application/json",
@@ -64,4 +66,21 @@ export const loginUser = async (
   }
 
   return response.json() as Promise<LoginResponseDto>;
+};
+
+export const getCurrentUser = async (): Promise<CurrentUserDto> => {
+  const token = localStorage.getItem("authToken");
+  const response = await fetch(meEndpoint, {
+    method: "GET",
+    headers: {
+      ...defaultHeaders,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(await getErrorMessage(response, "Failed to load profile."));
+  }
+
+  return response.json() as Promise<CurrentUserDto>;
 };

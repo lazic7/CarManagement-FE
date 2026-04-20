@@ -4,8 +4,10 @@ export interface MechanicDto {
   _id: string;
   email: string;
   role: "admin";
+  walletAddress?: string;
   createdAt: string;
   updatedAt: string;
+  isPending?: boolean;
 }
 
 interface ApiErrorResponse {
@@ -58,12 +60,12 @@ export const listMechanics = async (): Promise<MechanicDto[]> => {
 
 export const createMechanic = async (
   email: string,
-  password: string,
+  walletAddress: string,
 ): Promise<MechanicDto> => {
   const response = await fetch(buildApiUrl("/admin/mechanics"), {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, walletAddress }),
   });
   if (!response.ok) {
     throw new Error(
@@ -71,4 +73,19 @@ export const createMechanic = async (
     );
   }
   return response.json() as Promise<MechanicDto>;
+};
+
+export const deleteMechanic = async (id: string): Promise<void> => {
+  const response = await fetch(
+    buildApiUrl(`/admin/mechanics/${encodeURIComponent(id)}`),
+    {
+      method: "DELETE",
+      headers: authHeaders(),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "Failed to remove mechanic."),
+    );
+  }
 };

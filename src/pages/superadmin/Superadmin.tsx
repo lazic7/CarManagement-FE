@@ -4,10 +4,12 @@ import toast from "react-hot-toast";
 import "../../App.css";
 import {
   createMechanic,
+  deleteMechanic,
   listMechanics,
   type MechanicDto,
 } from "../../api/mechanics";
 import { clearAuthSession } from "../../utils/auth";
+import { RemoveMechanicModal } from "./RemoveMechanicModal";
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString("en-GB", {
@@ -20,9 +22,13 @@ export const Superadmin = () => {
   const [mechanics, setMechanics] = useState<MechanicDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [walletAddress, setWalletAddress] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [mechanicToRemove, setMechanicToRemove] = useState<MechanicDto | null>(
+    null,
+  );
+  const [isRemoving, setIsRemoving] = useState(false);
 
   const handleLogout = () => {
     clearAuthSession();
@@ -46,22 +52,51 @@ export const Superadmin = () => {
     loadData();
   }, []);
 
+  const handleConfirmRemove = async () => {
+    if (!mechanicToRemove) return;
+    setIsRemoving(true);
+    try {
+      await deleteMechanic(mechanicToRemove._id);
+      toast.success(`${mechanicToRemove.email} removed from the network.`);
+      setMechanicToRemove(null);
+      await loadData();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to remove mechanic.",
+      );
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setFormError("");
 
-    if (!email || !password) {
-      setFormError("Email and password are required.");
-      toast.error("Email and password are required.");
+    const trimmedWallet = walletAddress.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail || !trimmedWallet) {
+      setFormError("Email and wallet address are required.");
+      toast.error("All fields are required.");
+      return;
+    }
+
+    if (!/^0x[a-fA-F0-9]{40}$/.test(trimmedWallet)) {
+      setFormError("Wallet address must be a valid 0x… Ethereum address.");
+      toast.error("Invalid wallet address.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await createMechanic(email.trim(), password);
-      toast.success(`Mechanic ${email} created.`);
+      await createMechanic(trimmedEmail, trimmedWallet);
+      toast.success(
+        `Invitation sent to ${trimmedEmail}. They can set their password through the link.`,
+        { duration: 6000 },
+      );
       setEmail("");
-      setPassword("");
+      setWalletAddress("");
       await loadData();
     } catch (error) {
       const message =
@@ -134,18 +169,33 @@ export const Superadmin = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="mech-password">Temporary password</label>
+                <label htmlFor="mech-wallet">Wallet address</label>
                 <input
                   type="text"
-                  id="mech-password"
-                  name="password"
-                  placeholder="Min. 6 characters"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  id="mech-wallet"
+                  name="walletAddress"
+                  placeholder="0x…"
+                  value={walletAddress}
+                  onChange={(event) => setWalletAddress(event.target.value)}
                   disabled={isSubmitting}
                   autoComplete="off"
+                  spellCheck={false}
                   required
                 />
+                <p className="form-hint">
+                  This wallet will be permanently tied to the account — only it
+                  can sign on-chain records.
+                </p>
+              </div>
+
+              <div className="invite-notice">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 4h16v16H4zM4 4l8 8 8-8" />
+                </svg>
+                <span>
+                  We'll email the mechanic a link to set their own password —
+                  you don't enter one here.
+                </span>
               </div>
 
               <button
@@ -208,10 +258,39 @@ export const Superadmin = () => {
                         </div>
                         <div className="superadmin-item-meta">
                           Joined {formatDate(mechanic.createdAt)}
+                          {mechanic.walletAddress && (
+                            <>
+                              {" · "}
+                              <code className="superadmin-item-wallet">
+                                {mechanic.walletAddress.slice(0, 6)}…
+                                {mechanic.walletAddress.slice(-4)}
+                              </code>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
-                    <span className="superadmin-item-role">MECHANIC</span>
+                    <div className="superadmin-item-actions">
+                      {mechanic.isPending ? (
+                        <span className="superadmin-item-role superadmin-item-role-pending">
+                          PENDING
+                        </span>
+                      ) : (
+                        <span className="superadmin-item-role">MECHANIC</span>
+                      )}
+                      <button
+                        type="button"
+                        className="superadmin-item-remove"
+                        onClick={() => setMechanicToRemove(mechanic)}
+                        title={`Remove ${mechanic.email}`}
+                        aria-label={`Remove ${mechanic.email}`}
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+                          <path d="M10 11v6M14 11v6" />
+                        </svg>
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -219,6 +298,18 @@ export const Superadmin = () => {
           </div>
         </div>
       </main>
+
+      {mechanicToRemove && (
+        <RemoveMechanicModal
+          email={mechanicToRemove.email}
+          walletAddress={mechanicToRemove.walletAddress}
+          isSubmitting={isRemoving}
+          onConfirm={handleConfirmRemove}
+          onCancel={() => {
+            if (!isRemoving) setMechanicToRemove(null);
+          }}
+        />
+      )}
     </section>
   );
 };

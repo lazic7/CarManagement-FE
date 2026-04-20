@@ -13,7 +13,13 @@ const requestAccounts = async (): Promise<string[]> => {
   }
 };
 
-export const WalletStatusBanner = () => {
+interface WalletStatusBannerProps {
+  expectedAddress?: string;
+}
+
+export const WalletStatusBanner = ({
+  expectedAddress,
+}: WalletStatusBannerProps = {}) => {
   const [address, setAddress] = useState<string>("");
   const [isChecking, setIsChecking] = useState(true);
   const hasProvider = typeof window !== "undefined" && !!window.ethereum;
@@ -27,6 +33,21 @@ export const WalletStatusBanner = () => {
     });
     return () => {
       cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const ethereum = window.ethereum as unknown as {
+      on?: (event: string, handler: (accounts: string[]) => void) => void;
+      removeListener?: (
+        event: string,
+        handler: (accounts: string[]) => void,
+      ) => void;
+    } | undefined;
+    const handler = (accounts: string[]) => setAddress(accounts[0] ?? "");
+    ethereum?.on?.("accountsChanged", handler);
+    return () => {
+      ethereum?.removeListener?.("accountsChanged", handler);
     };
   }, []);
 
@@ -103,6 +124,49 @@ export const WalletStatusBanner = () => {
         >
           Connect wallet
         </button>
+      </div>
+    );
+  }
+
+  const normalizedExpected = expectedAddress?.toLowerCase() ?? "";
+  const normalizedConnected = address.toLowerCase();
+  const hasMismatch =
+    normalizedExpected && normalizedExpected !== normalizedConnected;
+
+  if (hasMismatch) {
+    return (
+      <div className="wallet-banner wallet-banner-mismatch">
+        <div className="wallet-icon-wrap wallet-icon-danger">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+        </div>
+        <div className="wallet-banner-body">
+          <div className="wallet-banner-title">Wrong wallet connected</div>
+          <div className="wallet-banner-sub">
+            Switch MetaMask to your registered wallet (
+            <code>
+              {normalizedExpected.slice(0, 6)}…{normalizedExpected.slice(-4)}
+            </code>
+            ) to submit records.
+          </div>
+        </div>
+        <a
+          className="wallet-address-chip wallet-address-chip-danger"
+          href={buildAddressUrl(address)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <code>{shortenHash(address)}</code>
+          <svg className="external-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M14 3h7v7" />
+            <path d="M10 14L21 3" />
+            <path d="M21 14v7h-7" />
+            <path d="M3 10V3h7" />
+          </svg>
+        </a>
       </div>
     );
   }

@@ -6,6 +6,7 @@ import { submitMileageOnChain } from "../../web3/mileageContract";
 import { buildTxUrl, buildAddressUrl, shortenHash } from "../../utils/explorer";
 import { celebrate } from "../../utils/celebrate";
 import { clearAuthSession } from "../../utils/auth";
+import { getCurrentUser } from "../../api/auth";
 import {
   fetchAdminHistoryFromChain,
   fetchLastRecord,
@@ -65,7 +66,16 @@ export const Dashboard = () => {
   const [isLookingUpVin, setIsLookingUpVin] = useState(false);
   const [vinLookupDone, setVinLookupDone] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [registeredWallet, setRegisteredWallet] = useState<string>("");
   const connectedWallet = useWalletAddress();
+
+  const normalizedRegistered = registeredWallet.toLowerCase();
+  const normalizedConnected = connectedWallet.toLowerCase();
+  const hasWalletMismatch = Boolean(
+    normalizedRegistered &&
+      normalizedConnected &&
+      normalizedRegistered !== normalizedConnected,
+  );
 
   const normalizedVin = vin.trim().toUpperCase();
   const parsedMileage = mileageDigits ? Number(mileageDigits) : 0;
@@ -73,6 +83,23 @@ export const Dashboard = () => {
 
   useEffect(() => {
     setHistory(loadHistory());
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    getCurrentUser()
+      .then((user) => {
+        if (cancelled) return;
+        if (user.walletAddress) {
+          setRegisteredWallet(user.walletAddress);
+        }
+      })
+      .catch(() => {
+        /* ignore — user might not have wallet assigned yet */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -204,6 +231,13 @@ export const Dashboard = () => {
       return false;
     }
 
+    if (hasWalletMismatch) {
+      const message = `Your account is tied to wallet ${normalizedRegistered}. Switch your MetaMask wallet before submitting.`;
+      setSubmitError(message);
+      toast.error("Wallet mismatch — switch MetaMask to your registered wallet.");
+      return false;
+    }
+
     return true;
   };
 
@@ -282,7 +316,7 @@ export const Dashboard = () => {
     }
   };
 
-  const hasBlockingError = Boolean(hardError);
+  const hasBlockingError = Boolean(hardError) || hasWalletMismatch;
 
   return (
     <section id="admin">
@@ -296,7 +330,7 @@ export const Dashboard = () => {
         </nav>
       </header>
       <main>
-        <WalletStatusBanner />
+        <WalletStatusBanner expectedAddress={registeredWallet} />
         <AdminStatsCard history={history} isSyncing={isSyncingChain} />
 
         <div className="admin-grid">
@@ -309,6 +343,31 @@ export const Dashboard = () => {
             </div>
 
             <StepIndicator step={step} />
+
+            {hasWalletMismatch && (
+              <div className="wallet-mismatch">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 9v4M12 17h.01" />
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+                <div>
+                  <strong>Wallet mismatch</strong>
+                  <p>
+                    Your account is tied to{" "}
+                    <code>
+                      {normalizedRegistered.slice(0, 6)}…
+                      {normalizedRegistered.slice(-4)}
+                    </code>{" "}
+                    but MetaMask is connected with{" "}
+                    <code>
+                      {normalizedConnected.slice(0, 6)}…
+                      {normalizedConnected.slice(-4)}
+                    </code>
+                    . Switch MetaMask to your registered wallet to continue.
+                  </p>
+                </div>
+              </div>
+            )}
 
             <div className="form-group">
               <label htmlFor="admin-vin">VIN Number</label>

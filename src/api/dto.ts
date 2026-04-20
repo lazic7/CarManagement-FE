@@ -38,3 +38,12 @@ export interface MileageRecordDto {
 export interface MileageRecordResponseDto {
   records: MileageRecordDto[];
 }
+
+export interface CurrentUserDto {
+  _id: string;
+  email: string;
+  role: "user" | "admin" | "superadmin";
+  walletAddress?: string;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -13,6 +13,7 @@ import {
   MechanicProfile,
   NotFound,
   RouteErrorPage,
+  SetPassword,
   Superadmin,
   Unauthorized,
 } from "./pages";
@@ -46,6 +47,11 @@ const router = createBrowserRouter([
     path: "/superadmin",
     Component: Superadmin,
     middleware: [requireAuth(["superadmin"])],
+    errorElement: <RouteErrorPage />,
+  },
+  {
+    path: "/set-password",
+    Component: SetPassword,
     errorElement: <RouteErrorPage />,
   },
   {

@@ -9,6 +9,10 @@ import {
   type MechanicDto,
 } from "../../api/mechanics";
 import { clearAuthSession } from "../../utils/auth";
+import {
+  addMechanicOnChain,
+  revokeMechanicOnChain,
+} from "../../web3/adminContract";
 import { RemoveMechanicModal } from "./RemoveMechanicModal";
 
 const formatDate = (value: string) =>
@@ -55,12 +59,22 @@ export const Superadmin = () => {
   const handleConfirmRemove = async () => {
     if (!mechanicToRemove) return;
     setIsRemoving(true);
+    const pendingToast = toast.loading("Revoking on blockchain…");
     try {
+      if (mechanicToRemove.walletAddress) {
+        await revokeMechanicOnChain(mechanicToRemove.walletAddress);
+        toast.loading("Wallet revoked. Removing account…", {
+          id: pendingToast,
+        });
+      }
       await deleteMechanic(mechanicToRemove._id);
-      toast.success(`${mechanicToRemove.email} removed from the network.`);
+      toast.success(`${mechanicToRemove.email} removed from the network.`, {
+        id: pendingToast,
+      });
       setMechanicToRemove(null);
       await loadData();
     } catch (error) {
+      toast.dismiss(pendingToast);
       toast.error(
         error instanceof Error ? error.message : "Failed to remove mechanic.",
       );
@@ -89,16 +103,22 @@ export const Superadmin = () => {
     }
 
     setIsSubmitting(true);
+    const pendingToast = toast.loading("Approving mechanic on blockchain…");
     try {
+      await addMechanicOnChain(trimmedWallet);
+      toast.loading("Wallet approved. Creating account…", {
+        id: pendingToast,
+      });
       await createMechanic(trimmedEmail, trimmedWallet);
       toast.success(
         `Invitation sent to ${trimmedEmail}. They can set their password through the link.`,
-        { duration: 6000 },
+        { id: pendingToast, duration: 6000 },
       );
       setEmail("");
       setWalletAddress("");
       await loadData();
     } catch (error) {
+      toast.dismiss(pendingToast);
       const message =
         error instanceof Error
           ? error.message

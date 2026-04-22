@@ -1,4 +1,4 @@
-const EXPLORER_BASE = "https://volta-explorer.energyweb.org";
+import { EXPLORER_BASE } from "../config/chain";
 
 export const buildTxUrl = (txHash: string): string =>
   `${EXPLORER_BASE}/tx/${txHash}`;

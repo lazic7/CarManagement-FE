@@ -4,7 +4,7 @@ import type { MileageRecordDto } from "../api/dto";
 
 const CONTRACT_ADDRESS =
   import.meta.env.VITE_MILEAGE_CONTRACT_ADDRESS ?? "";
-const EXPLORER_BASE = "https://volta-explorer.energyweb.org";
+import { EXPLORER_BASE } from "../config/chain";
 
 type Rgb = [number, number, number];
 
@@ -120,7 +120,7 @@ export const generateVehiclePassport = (
   doc.setFontSize(7.5);
   doc.setTextColor(...BRAND_CYAN);
   doc.text(
-    "Energy Web Volta Blockchain",
+    "Ethereum Sepolia Blockchain",
     pageWidth - margin,
     77,
     { align: "right" },
@@ -228,7 +228,7 @@ export const generateVehiclePassport = (
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(150, 165, 190);
-  doc.text("Immutable record · Energy Web Volta Blockchain", margin + 44, cursorY + 36);
+  doc.text("Immutable record · Ethereum Sepolia Blockchain", margin + 44, cursorY + 36);
 
   // Contract address on the right
   doc.setFont("helvetica", "bold");
@@ -342,7 +342,7 @@ export const generateVehiclePassport = (
   doc.setFontSize(7.5);
   doc.setTextColor(160, 175, 200);
   doc.text(
-    "This record is cryptographically sealed on the Energy Web Volta blockchain. Any attempt to alter historical entries is rejected by the smart contract.",
+    "This record is cryptographically sealed on the Ethereum Sepolia blockchain. Any attempt to alter historical entries is rejected by the smart contract.",
     margin,
     footerY + 22,
     { maxWidth: contentWidth },

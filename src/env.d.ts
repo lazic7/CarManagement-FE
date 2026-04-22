@@ -14,7 +14,7 @@ interface ImportMetaEnv {
   readonly VITE_MILEAGE_CONTRACT_ADDRESS?: string;
   readonly VITE_MILEAGE_CONTRACT_ABI_JSON?: string;
   readonly VITE_MILEAGE_WRITE_METHOD?: string;
-  readonly VITE_VOLTA_RPC_URL?: string;
+  readonly VITE_CHAIN_RPC_URL?: string;
 }
 
 interface ImportMeta {

@@ -167,7 +167,7 @@ export const MechanicProfile = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <code>View on Volta Explorer</code>
+              <code>View on Etherscan</code>
               <svg
                 className="external-icon"
                 viewBox="0 0 24 24"
@@ -267,7 +267,7 @@ export const MechanicProfile = () => {
                       href={buildTxUrl(entry.txHash)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      title="View transaction on Volta Explorer"
+                      title="View transaction on Etherscan"
                     >
                       <code>{shortenHash(entry.txHash, 6, 6)}</code>
                       <svg

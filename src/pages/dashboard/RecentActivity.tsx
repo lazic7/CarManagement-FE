@@ -33,7 +33,7 @@ export const RecentActivity = ({ history }: RecentActivityProps) => {
           </div>
           <p>
             Your submitted records will appear here with a direct link to
-            Volta Explorer.
+            Etherscan.
           </p>
         </div>
       ) : (
@@ -66,7 +66,7 @@ export const RecentActivity = ({ history }: RecentActivityProps) => {
                   href={buildTxUrl(entry.txHash)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  title="View transaction on Volta Explorer"
+                  title="View transaction on Etherscan"
                 >
                   <code>{shortenHash(entry.txHash, 6, 6)}</code>
                   <svg

@@ -1,7 +1,11 @@
 import { BrowserProvider, Contract, type InterfaceAbi } from "ethers";
+import {
+  CHAIN_ID,
+  CHAIN_ID_HEX,
+  WALLET_ADD_CHAIN_PARAMS,
+  CHAIN_DISPLAY_NAME,
+} from "../config/chain";
 
-const VOLTA_CHAIN_ID = 73799;
-const VOLTA_CHAIN_ID_HEX = "0x12047";
 const CONTRACT_ADDRESS = import.meta.env.VITE_MILEAGE_CONTRACT_ADDRESS ?? "";
 
 type EthereumProvider = NonNullable<Window["ethereum"]>;
@@ -25,12 +29,12 @@ const getEthereumProvider = (): EthereumProvider => {
   return window.ethereum;
 };
 
-const ensureVoltaNetwork = async (): Promise<void> => {
+const ensureConfiguredNetwork = async (): Promise<void> => {
   const ethereum = getEthereumProvider();
   try {
     await ethereum.request({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: VOLTA_CHAIN_ID_HEX }],
+      params: [{ chainId: CHAIN_ID_HEX }],
     });
   } catch (error) {
     const code =
@@ -41,15 +45,7 @@ const ensureVoltaNetwork = async (): Promise<void> => {
 
     await ethereum.request({
       method: "wallet_addEthereumChain",
-      params: [
-        {
-          chainId: VOLTA_CHAIN_ID_HEX,
-          chainName: "Energy Web Volta Testnet",
-          nativeCurrency: { name: "Volta", symbol: "VT", decimals: 18 },
-          rpcUrls: ["https://volta-rpc.energyweb.org"],
-          blockExplorerUrls: ["https://volta-explorer.energyweb.org"],
-        },
-      ],
+      params: [WALLET_ADD_CHAIN_PARAMS],
     });
   }
 };
@@ -57,12 +53,12 @@ const ensureVoltaNetwork = async (): Promise<void> => {
 const getAdminContract = async (): Promise<Contract> => {
   const ethereum = getEthereumProvider();
   await ethereum.request({ method: "eth_requestAccounts" });
-  await ensureVoltaNetwork();
+  await ensureConfiguredNetwork();
 
   const provider = new BrowserProvider(ethereum);
   const network = await provider.getNetwork();
-  if (Number(network.chainId) !== VOLTA_CHAIN_ID) {
-    throw new Error("Please connect MetaMask to Volta network.");
+  if (Number(network.chainId) !== CHAIN_ID) {
+    throw new Error(`Please connect MetaMask to ${CHAIN_DISPLAY_NAME}.`);
   }
 
   if (!CONTRACT_ADDRESS) {

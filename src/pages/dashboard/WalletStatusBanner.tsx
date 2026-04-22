@@ -182,7 +182,7 @@ export const WalletStatusBanner = ({
       <div className="wallet-banner-body">
         <div className="wallet-banner-title">Wallet connected</div>
         <div className="wallet-banner-sub">
-          Energy Web Volta · ready to submit
+          Ethereum Sepolia · ready to submit
         </div>
       </div>
       <a

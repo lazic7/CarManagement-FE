@@ -4,11 +4,9 @@ import {
   JsonRpcProvider,
   type InterfaceAbi,
 } from "ethers";
+import { CHAIN_ID, DEFAULT_RPC_URL } from "../config/chain";
 import type { AdminHistoryEntry } from "../pages/dashboard/adminHistory";
 
-const VOLTA_RPC_URL =
-  import.meta.env.VITE_VOLTA_RPC_URL ?? "https://volta-rpc.energyweb.org";
-const VOLTA_CHAIN_ID = 73799;
 const CONTRACT_ADDRESS = import.meta.env.VITE_MILEAGE_CONTRACT_ADDRESS ?? "";
 const MAX_TIMESTAMPS = 12;
 
@@ -34,7 +32,7 @@ export const fetchLastRecord = async (
   vin: string,
 ): Promise<LastRecordInfo | null> => {
   if (!CONTRACT_ADDRESS || !vin) return null;
-  const provider = new JsonRpcProvider(VOLTA_RPC_URL, VOLTA_CHAIN_ID);
+  const provider = new JsonRpcProvider(DEFAULT_RPC_URL, CHAIN_ID);
   const contract = new Contract(CONTRACT_ADDRESS, parseAbiFromEnv(), provider);
   const records = (await contract
     .getFunction("getRecords")
@@ -57,7 +55,7 @@ export const fetchAdminHistoryFromChain = async (
 ): Promise<AdminHistoryEntry[]> => {
   if (!CONTRACT_ADDRESS || !walletAddress) return [];
 
-  const provider = new JsonRpcProvider(VOLTA_RPC_URL, VOLTA_CHAIN_ID);
+  const provider = new JsonRpcProvider(DEFAULT_RPC_URL, CHAIN_ID);
   const contract = new Contract(CONTRACT_ADDRESS, parseAbiFromEnv(), provider);
   const filter = contract.filters.MileageAdded();
   const events = await contract.queryFilter(filter);

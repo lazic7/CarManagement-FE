@@ -4,11 +4,14 @@ import {
   JsonRpcProvider,
   type InterfaceAbi,
 } from "ethers";
-
-const VOLTA_CHAIN_ID = 73799;
-const VOLTA_CHAIN_ID_HEX = "0x12047";
-const VOLTA_RPC_URL =
-  import.meta.env.VITE_VOLTA_RPC_URL ?? "https://volta-rpc.energyweb.org";
+import {
+  CHAIN_ID,
+  CHAIN_ID_HEX,
+  CHAIN_DISPLAY_NAME,
+  DEFAULT_RPC_URL,
+  NATIVE_CURRENCY,
+  WALLET_ADD_CHAIN_PARAMS,
+} from "../config/chain";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_MILEAGE_CONTRACT_ADDRESS ?? "";
 const WRITE_METHOD = import.meta.env.VITE_MILEAGE_WRITE_METHOD ?? "addMileage";
@@ -39,13 +42,13 @@ const getEthereumProvider = (): EthereumProvider => {
   return window.ethereum;
 };
 
-const ensureVoltaNetwork = async (): Promise<void> => {
+const ensureConfiguredNetwork = async (): Promise<void> => {
   const ethereum = getEthereumProvider();
 
   try {
     await ethereum.request({
       method: "wallet_switchEthereumChain",
-      params: [{ chainId: VOLTA_CHAIN_ID_HEX }],
+      params: [{ chainId: CHAIN_ID_HEX }],
     });
   } catch (error) {
     const code =
@@ -59,19 +62,7 @@ const ensureVoltaNetwork = async (): Promise<void> => {
 
     await ethereum.request({
       method: "wallet_addEthereumChain",
-      params: [
-        {
-          chainId: VOLTA_CHAIN_ID_HEX,
-          chainName: "Energy Web Volta Testnet",
-          nativeCurrency: {
-            name: "Volta",
-            symbol: "VT",
-            decimals: 18,
-          },
-          rpcUrls: ["https://volta-rpc.energyweb.org"],
-          blockExplorerUrls: ["https://volta-explorer.energyweb.org"],
-        },
-      ],
+      params: [WALLET_ADD_CHAIN_PARAMS],
     });
   }
 };
@@ -84,14 +75,14 @@ const createContractWithSigner = async (): Promise<{
   const ethereum = getEthereumProvider();
 
   await ethereum.request({ method: "eth_requestAccounts" });
-  await ensureVoltaNetwork();
+  await ensureConfiguredNetwork();
 
   const provider = new BrowserProvider(ethereum);
   const signer = await provider.getSigner();
   const network = await provider.getNetwork();
 
-  if (Number(network.chainId) !== VOLTA_CHAIN_ID) {
-    throw new Error("Please connect MetaMask to Volta network.");
+  if (Number(network.chainId) !== CHAIN_ID) {
+    throw new Error(`Please connect MetaMask to ${CHAIN_DISPLAY_NAME}.`);
   }
 
   if (!CONTRACT_ADDRESS) {
@@ -160,7 +151,7 @@ const mapContractError = (error: unknown): Error | null => {
   }
   if (combined.includes("insufficient funds")) {
     return new Error(
-      "Your wallet does not have enough VT (Volta) tokens to pay gas. Get some from a Volta faucet.",
+      `Your wallet does not have enough ${NATIVE_CURRENCY.symbol} to pay gas on ${CHAIN_DISPLAY_NAME}. Get some from a faucet.`,
     );
   }
   if (combined.includes("missing revert data") || combined.includes("call_exception")) {
@@ -196,7 +187,7 @@ export const submitMileageOnChain = async (
   }
 
   try {
-    const readProvider = new JsonRpcProvider(VOLTA_RPC_URL, VOLTA_CHAIN_ID);
+    const readProvider = new JsonRpcProvider(DEFAULT_RPC_URL, CHAIN_ID);
     const readContract = new Contract(CONTRACT_ADDRESS, parseAbiFromEnv(), readProvider);
     const records = (await readContract.getFunction("getRecords").staticCall(vin)) as Array<{
       mileage: bigint;
@@ -259,7 +250,7 @@ export const submitMileageOnChain = async (
 
   callbacks?.onTransactionSubmitted?.(txHash);
 
-  const rpcProvider = new JsonRpcProvider(VOLTA_RPC_URL, VOLTA_CHAIN_ID);
+  const rpcProvider = new JsonRpcProvider(DEFAULT_RPC_URL, CHAIN_ID);
   const receipt = await rpcProvider.waitForTransaction(
     txHash,
     1,

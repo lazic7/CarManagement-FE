@@ -39,7 +39,7 @@ export const AdminStatsCard = ({ history, isSyncing }: AdminStatsCardProps) => {
           ) : totalTxs > 0 ? (
             <>
               <span className="sync-dot" aria-hidden="true" />
-              Live from Volta blockchain
+              Live from Sepolia blockchain
             </>
           ) : (
             "Submit your first record to see stats"

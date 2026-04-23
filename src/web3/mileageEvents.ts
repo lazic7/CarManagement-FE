@@ -9,6 +9,7 @@ import type { AdminHistoryEntry } from "../pages/dashboard/adminHistory";
 
 const CONTRACT_ADDRESS = import.meta.env.VITE_MILEAGE_CONTRACT_ADDRESS ?? "";
 const MAX_TIMESTAMPS = 12;
+const LOOKBACK_BLOCKS = 50_000;
 
 const parseAbiFromEnv = (): InterfaceAbi => {
   const rawAbi = import.meta.env.VITE_MILEAGE_CONTRACT_ABI_JSON;
@@ -58,7 +59,10 @@ export const fetchAdminHistoryFromChain = async (
   const provider = new JsonRpcProvider(DEFAULT_RPC_URL, CHAIN_ID);
   const contract = new Contract(CONTRACT_ADDRESS, parseAbiFromEnv(), provider);
   const filter = contract.filters.MileageAdded();
-  const events = await contract.queryFilter(filter);
+
+  const latestBlock = await provider.getBlockNumber();
+  const fromBlock = Math.max(0, latestBlock - LOOKBACK_BLOCKS);
+  const events = await contract.queryFilter(filter, fromBlock, latestBlock);
 
   const normalizedWallet = walletAddress.toLowerCase();
   const mine = events.filter((event): event is EventLog => {

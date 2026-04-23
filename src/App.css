@@ -2427,6 +2427,77 @@ footer p {
   width: 100%;
 }
 
+.invitee-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  max-width: 440px;
+  width: 100%;
+  margin-top: 1.25rem;
+  padding: 0.85rem 1rem;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(0, 212, 255, 0.08),
+      rgba(139, 92, 246, 0.08)
+    );
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.invitee-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 212, 255, 0.18),
+    rgba(139, 92, 246, 0.18)
+  );
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  color: var(--accent-cyan);
+}
+
+.invitee-card-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.invitee-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.invitee-card-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+
+.invitee-card-email {
+  font-family: "SFMono-Regular", "Menlo", monospace;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .superadmin-item-actions {
   display: flex;
   align-items: center;

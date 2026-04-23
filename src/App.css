@@ -2459,10 +2459,15 @@ footer p {
   stroke-linejoin: round;
 }
 
-.superadmin-item-remove:hover {
+.superadmin-item-remove:hover:not(:disabled) {
   color: #fca5a5;
   background: rgba(248, 113, 113, 0.1);
   border-color: rgba(248, 113, 113, 0.35);
+}
+
+.superadmin-item-remove:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .btn-danger {

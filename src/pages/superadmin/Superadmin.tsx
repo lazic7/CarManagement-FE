@@ -9,10 +9,13 @@ import {
   type MechanicDto,
 } from "../../api/mechanics";
 import { clearAuthSession } from "../../utils/auth";
+import { getCurrentUser } from "../../api/auth";
 import {
   addMechanicOnChain,
   revokeMechanicOnChain,
 } from "../../web3/adminContract";
+import { useWalletAddress } from "../../hooks/useWalletAddress";
+import { WalletStatusBanner } from "../dashboard/WalletStatusBanner";
 import { RemoveMechanicModal } from "./RemoveMechanicModal";
 
 const formatDate = (value: string) =>
@@ -33,6 +36,19 @@ export const Superadmin = () => {
     null,
   );
   const [isRemoving, setIsRemoving] = useState(false);
+  const [registeredWallet, setRegisteredWallet] = useState<string>("");
+  const connectedWallet = useWalletAddress();
+
+  const normalizedRegistered = registeredWallet.toLowerCase();
+  const normalizedConnected = connectedWallet.toLowerCase();
+  const hasWalletMismatch = Boolean(
+    normalizedRegistered &&
+      normalizedConnected &&
+      normalizedRegistered !== normalizedConnected,
+  );
+  const walletReady =
+    Boolean(normalizedConnected) &&
+    (!normalizedRegistered || normalizedRegistered === normalizedConnected);
 
   const handleLogout = () => {
     clearAuthSession();
@@ -56,8 +72,29 @@ export const Superadmin = () => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    getCurrentUser()
+      .then((user) => {
+        if (cancelled) return;
+        if (user.walletAddress) setRegisteredWallet(user.walletAddress);
+      })
+      .catch(() => {
+        /* ignore — banner will just say "connect" */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const handleConfirmRemove = async () => {
     if (!mechanicToRemove) return;
+    if (!walletReady) {
+      toast.error(
+        "Connect your superadmin wallet before removing a mechanic.",
+      );
+      return;
+    }
     setIsRemoving(true);
     const pendingToast = toast.loading("Revoking on blockchain…");
     try {
@@ -102,6 +139,14 @@ export const Superadmin = () => {
       return;
     }
 
+    if (!walletReady) {
+      setFormError(
+        "Connect your superadmin wallet in MetaMask before creating a mechanic.",
+      );
+      toast.error("Connect your superadmin wallet first.");
+      return;
+    }
+
     setIsSubmitting(true);
     const pendingToast = toast.loading("Approving mechanic on blockchain…");
     try {
@@ -142,6 +187,7 @@ export const Superadmin = () => {
         </nav>
       </header>
       <main className="superadmin-main">
+        <WalletStatusBanner expectedAddress={registeredWallet} />
         <section className="superadmin-hero">
           <span className="section-kicker">MECHANIC MANAGEMENT</span>
           <h1 className="superadmin-title">
@@ -221,9 +267,15 @@ export const Superadmin = () => {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !walletReady}
               >
-                {isSubmitting ? "Creating…" : "Create mechanic"}
+                {isSubmitting
+                  ? "Creating…"
+                  : !walletReady
+                    ? hasWalletMismatch
+                      ? "Switch to superadmin wallet to continue"
+                      : "Connect wallet to continue"
+                    : "Create mechanic"}
               </button>
 
               {formError && (
@@ -302,7 +354,12 @@ export const Superadmin = () => {
                         type="button"
                         className="superadmin-item-remove"
                         onClick={() => setMechanicToRemove(mechanic)}
-                        title={`Remove ${mechanic.email}`}
+                        disabled={!walletReady}
+                        title={
+                          !walletReady
+                            ? "Connect your superadmin wallet to remove mechanics"
+                            : `Remove ${mechanic.email}`
+                        }
                         aria-label={`Remove ${mechanic.email}`}
                       >
                         <svg viewBox="0 0 24 24" aria-hidden="true">

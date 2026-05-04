@@ -225,11 +225,6 @@ export const App = () => {
                       <div className="hero-stat-value">&lt; 3s</div>
                       <div className="hero-stat-label">to verify</div>
                     </div>
-                    <div className="hero-stat-divider" aria-hidden="true" />
-                    <div className="hero-stat">
-                      <div className="hero-stat-value">0€</div>
-                      <div className="hero-stat-label">for buyers</div>
-                    </div>
                   </div>
                 </div>
 
@@ -308,8 +303,7 @@ export const App = () => {
                     <h3>Sealed on-chain</h3>
                     <p>
                       The record is cryptographically signed and written to the
-                      Energy Web blockchain. Cannot be altered or deleted by
-                      anyone — ever.
+                      blockchain. Cannot be altered or deleted by anyone — ever.
                     </p>
                   </article>
                   <article className="how-step glass-card">

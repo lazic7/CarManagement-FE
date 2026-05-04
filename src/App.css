@@ -3336,6 +3336,10 @@ footer p {
   margin: 0 0 1.25rem;
 }
 
+.landing-problem h2 .gradient-text {
+  white-space: nowrap;
+}
+
 .landing-problem p {
   font-size: 1.05rem;
   line-height: 1.7;

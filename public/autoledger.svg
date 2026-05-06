@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="40" y1="40" x2="472" y2="472" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#04142A"/>
+      <stop offset="0.55" stop-color="#070B1E"/>
+      <stop offset="1" stop-color="#160420"/>
+    </linearGradient>
+
+    <linearGradient id="main" x1="120" y1="100" x2="390" y2="410" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1AD9FF"/>
+      <stop offset="0.52" stop-color="#458BFF"/>
+      <stop offset="1" stop-color="#B35BFF"/>
+    </linearGradient>
+
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect x="24" y="24" width="464" height="464" rx="120" fill="url(#bg)"/>
+
+  <!-- Decorative network lines -->
+  <g opacity="0.28" stroke="url(#main)" stroke-width="3" stroke-linecap="round">
+    <path d="M110 150L165 122"/>
+    <path d="M347 122L402 150"/>
+    <path d="M110 362L165 390"/>
+    <path d="M347 390L402 362"/>
+  </g>
+
+  <!-- Nodes -->
+  <g fill="#49DCFF" opacity="0.7">
+    <circle cx="110" cy="150" r="5"/>
+    <circle cx="165" cy="122" r="5"/>
+    <circle cx="347" cy="122" r="5"/>
+    <circle cx="402" cy="150" r="5"/>
+    <circle cx="110" cy="362" r="5"/>
+    <circle cx="165" cy="390" r="5"/>
+    <circle cx="347" cy="390" r="5"/>
+    <circle cx="402" cy="362" r="5"/>
+  </g>
+
+  <!-- Crystal -->
+  <g filter="url(#glow)" fill="none" stroke-linejoin="round" stroke-linecap="round">
+
+    <!-- Outer crystal -->
+    <path d="
+      M256 98
+      L356 154
+      L394 256
+      L356 358
+      L256 414
+      L156 358
+      L118 256
+      L156 154
+      Z"
+      stroke="url(#main)"
+      stroke-width="10"/>
+
+    <!-- Top facets -->
+    <path d="M256 98L204 190L256 168L308 190Z"
+          stroke="url(#main)"
+          stroke-width="7"/>
+
+    <!-- Side facets -->
+    <path d="M156 154L204 190L188 260L118 256"
+          stroke="url(#main)"
+          stroke-width="6"
+          opacity="0.92"/>
+
+    <path d="M356 154L308 190L324 260L394 256"
+          stroke="url(#main)"
+          stroke-width="6"
+          opacity="0.92"/>
+
+    <!-- Inner crystal -->
+    <path d="
+      M206 220
+      L256 188
+      L306 220
+      L320 298
+      L256 348
+      L192 298
+      Z"
+      stroke="url(#main)"
+      stroke-width="8"/>
+
+    <!-- Internal lines -->
+    <path d="M256 98V188"
+          stroke="url(#main)"
+          stroke-width="5"
+          opacity="0.75"/>
+
+    <path d="M204 190L256 168L308 190"
+          stroke="url(#main)"
+          stroke-width="5"
+          opacity="0.7"/>
+
+    <path d="M256 188V348"
+          stroke="url(#main)"
+          stroke-width="4"
+          opacity="0.6"/>
+
+    <path d="M206 220L256 250L306 220"
+          stroke="url(#main)"
+          stroke-width="4"
+          opacity="0.55"/>
+  </g>
+</svg>
